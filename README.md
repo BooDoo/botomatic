@@ -1,9 +1,9 @@
 Lyr+Pic=Tweet (lyrpictweet)
 =================
 
-This script takes a random tweet-size lyric (preferably rhyming) from one of the specified songs on ChartLyrics, pairs it with a random image from Flickr, and then tweets the result.
+This [node](http://nodejs.org) script extracts a random tweet-size lyric (preferably rhyming) from one of the specified songs on [ChartLyrics](http://chartlyrics.com), pairs it with a random image from [Flickr](http://flickr.com), and then tweets the result.
 
-This was built atop Darius Kazemi's [Metaphor-a-Minute](https://github.com/dariusk/metaphor-a-minute).
+This was built atop [Darius Kazemi](http://twitter.com/tinysubversions)'s [Metaphor-a-Minute](https://github.com/dariusk/metaphor-a-minute).
 Phonemes for rhyming are taken from the CMU Pronouncing Dictionary, made avaiable as [node-cmudict](https://github.com/nathanielksmith/node-cmudict) by Nathaniel K Smith.
 [express](https://github.com/visionmedia/express) is used as a placeholder server for fielding HTTP requests.
 [node-restclient](https://npmjs.org/package/node-restclient) is used for making calls to Flickr and YQL.

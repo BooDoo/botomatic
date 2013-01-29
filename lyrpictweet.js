@@ -1,10 +1,11 @@
 /*
-	This is a twitter bot which takes a random tweetable lyric (preferably rhyming) from one of the specified songs on ChartLyrics
-	and pairs it with a random image from Flickr, and then tweets the result.
+	This script takes a random tweet-size lyric (preferably rhyming) from one of the specified songs on ChartLyrics, pairs it 
+	with a random image from Flickr, and then tweets the result.
 
-	This was built atop Darius Kazemi's Metaphor-a-Minute source -- https://github.com/dariusk/metaphor-a-minute
-	Phonemes for rhyming are taken from the CMU Pronouncing Dictionary, made avaiable as nodejs module by Nathaniel K Smith -- https://github.com/nathanielksmith/node-cmudict
-	Other work by Joel "BooDoo" McCoy
+	This was built atop Darius Kazemi's Metaphor-a-Minute. Phonemes for rhyming are taken from the CMU Pronouncing Dictionary, 
+	made avaiable as node-cmudict by Nathaniel K Smith. express is used as a placeholder server for fielding HTTP requests. node-restclient is used for making calls to Flickr and YQL.
+
+	Other work by Joel McCoy.
 
 	Currently this is used for Twitter bots @GCatPix and @CWDogPix.
 */
