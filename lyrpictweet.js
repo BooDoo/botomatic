@@ -1,27 +1,23 @@
-/* Example of 'RHYME'
-function isRhyme(word, word2) {
-	return rhyme(function (r) {
-			var rhymes = r.rhyme('word'); //Array of words that rhyme with word
-			($.inArray(word2, rhymes) > -1) ? return true : return false;
-	});
-}
-*/
+/*
+	This is a twitter bot which takes a random tweetable lyric (preferably rhyming) from one of the specified songs on ChartLyrics
+	and pairs it with a random image from Flickr, and then tweets the result.
 
-//FUNCTIONS TO MAKE: 
-//  "Rhyme against array" -- ??
-//  ...
+	This was built atop Darius Kazemi's Metaphor-a-Minute source -- https://github.com/dariusk/metaphor-a-minute
+	Phonemes for rhyming are taken from the CMU Pronouncing Dictionary, made avaiable as nodejs module by Nathaniel K Smith -- https://github.com/nathanielksmith/node-cmudict
+	Other work by Joel "BooDoo" McCoy
+
+	Currently this is used for Twitter bots @GCatPix and @CWDogPix.
+*/
 
 var restclient 	= require('node-restclient'),
 		Twit 				= (process.env['NODE_ENV'] == 'production' ? require('twit') : {}),	//Only load Twit module if in production
 		express 		= require('express'),
 		app 				= express(),
-	//rhyme = require('rhyme');
 		CMUDict 		= require('cmudict').CMUDict,
-		cmudict 		= new CMUDict(),
-		cmuNotFound = [],
-		catTurn 		= true;
+		cmudict 		= new CMUDict();
 
 // If you're running locally you don't need this, or express at all.
+// This is present for deployment to nodejitsu, which requires some response to http call.
 app.get('/', function(req, res){
 		res.send('IGNORE ME.');
 });
@@ -51,25 +47,15 @@ if (process.env['NODE_ENV'] == 'production') {
 	});
 }
 
-//Returns a 'random' element from an array, or just the index to that element.
-function randomFromArray(arr, justIndex) {
-	if (arr instanceof Array) {
-		var index = Math.floor(Math.random() * arr.length);
-		if (justIndex === true)   {return index;}
-													else{return arr[index];}
-	}
-	else {return -1;}
-};
-
 //Get Flickr API key/secret from environment variables
 var flickr_key 		= process.env['GCATPIX_FLICKR_KEY'],
 		flickr_secret = process.env['GCATPIX_FLICKR_SECRET'];
 
+//Initiate some variables used across the program.
 var tweetContent 	=	'',
 		shortArtist 	=	'',
-		lyricURL 			=	'',
-		lyricYQL 			= '',
-		randomPage		=	1;
+		cmuNotFound 	= [],
+		catTurn 			= true; //Toggle between rapping cats and country-western dogs
 
 // !!WARNING: ChartLyrics is very sloppy with artist/song look-ups, and tends to only regard the first term fed into it.!! //
 var shortRappers = ['DOOM', 'Notorious', 'Quest', 'Black+Star', 'Mos+Def', '2Pac', 'Method', 'Busta', 'Geedorah', 'Madvillain',
@@ -125,13 +111,25 @@ var shortRappers = ['DOOM', 'Notorious', 'Quest', 'Black+Star', 'Mos+Def', '2Pac
 									"McEntire": ['Still', 'Even', 'Clown', 'Does', 'Fancy', 'Broken', 'Forever', 'Gets', 'Blue', 'Know', 'Rather', 'See', 'Survivor', 'Call', 'Little', 'Find', 'Sister', 'Fool', 'Own', 'Honest', 'Late', 'Rumor', 'John', 'Leave', 'Sunday', 'Back', 'Talking', 'Fear', 'Greatest', 'Hunter', 'Georgia', 'Walk', 'About', 'England', 'Heard', 'Lie', 'Leaving']
 								 }; 
 
-// Retrieve page somewhere 1-41 from Flickr photos tagged "cat" (and not "caterpillar") with CC or more liberal license, sort by relevance:
-function getCatPicURL(pages) {
-	if (typeof pages == 'undefined')              pages = 41;
-			randomPage =  Math.floor((Math.random() * pages) + 1);
-	var animPicURL  =  "http://api.flickr.com/services/rest/?method=flickr.photos.search&" +
+//Returns a 'random' element from an array, or just the index to that element.
+function randomFromArray(arr, justIndex) {
+	if (arr instanceof Array) {
+		var index = Math.floor(Math.random() * arr.length);
+		if (justIndex === true)   {return index;}
+													else{return arr[index];}
+	}
+	else {return -1;}
+};
+
+// Retrieve page somewhere 1-41 from Flickr photos with particular tags and
+// CC or more liberal license, sorted by relevance:
+function getPicURL(tags, pages) {
+	if (typeof pages == 'undefined')
+		pages = 41;
+	randomPage =  Math.floor((Math.random() * pages) + 1);
+	var picURL  =  "http://api.flickr.com/services/rest/?method=flickr.photos.search&" +
 										"api_key=" + flickr_key + "&" +
-										"tags=cat%2C+-caterpillar&" +
+										"tags=" + tags + "&" +
 										"license=1%7C2%7C3%7C4%7C5%7C6%7C7%7C8&" +
 										"sort=relevance&" +
 										"safe_search=1&" +
@@ -139,23 +137,19 @@ function getCatPicURL(pages) {
 										"page=" + randomPage + "&" +
 										"format=json&" +
 										"nojsoncallback=1";
-	return animPicURL;
+	return picURL;
+}
+
+function getCatPicURL(pages) {
+	if (typeof pages == 'undefined')
+		pages = 41;
+	return getPicURL('cat%2C+-caterpillar',pages);
 }
 
 function getDogPicURL(pages) {
-	if (typeof pages == 'undefined')              pages = 41;
-			randomPage =  Math.floor((Math.random() * pages) + 1);
-	var dogPicURL  =  "http://api.flickr.com/services/rest/?method=flickr.photos.search&" +
-										"api_key=" + flickr_key + "&" +
-										"tags=dog&" +
-										"license=1%7C2%7C3%7C4%7C5%7C6%7C7%7C8&" +
-										"sort=relevance&" +
-										"safe_search=1&" +
-										"content_type=1&" +
-										"page=" + randomPage + "&" +
-										"format=json&" +
-										"nojsoncallback=1";
-	return dogPicURL;
+	if (typeof pages == 'undefined')
+		pages = 41;
+	return getPicURL('dog',pages);
 }
 
 //Grab a 'random' artist, and then grab a 'random' song from array of associated titles.
@@ -164,26 +158,26 @@ function pickSong() {
 	return [shortArtist, randomFromArray(shortSongs[shortArtist])];
 }
 
-//Compose the request URL for retrieving ChartLyrics API data through YQL.
+//Form the request URL for retrieving ChartLyrics API data through YQL.
 function makeYQL(artist, song) {
-	lyricURL = 'http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?artist=' + artist + '&song=' + song;
-	lyricYQL = 'http://query.yahooapis.com/v1/public/yql?q=' + encodeURIComponent('select * from xml where url="' + lyricURL + '"') + '&format=json';
+	var lyricURL = 'http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?artist=' + artist + '&song=' + song,
+			lyricYQL = 'http://query.yahooapis.com/v1/public/yql?q=' + encodeURIComponent('select * from xml where url="' + lyricURL + '"') + '&format=json';
 
 	return lyricYQL;
 }
 
 //Do the damn thang
 function makeLyrpicTwit() {
-	tweetContent = '';
-
-	var artistAndSong = pickSong(); 																																				//Returns [artist, song]
-																																																					console.log(artistAndSong.join('\t'));
-	var yql = makeYQL(artistAndSong[0], artistAndSong[1]); 																									//Returns YQL URL for GET request
+	var tweetContent = '',
+			artistAndSong = pickSong(), 																																				//Returns [artist, song]
+			yql = makeYQL(artistAndSong[0], artistAndSong[1]); 																									//Returns YQL URL for GET request
+	
+	console.log(artistAndSong.join('\t'));
 
 	var lyricReq = restclient.get(yql,function(data){
 			if(data.query.results.GetLyricResult.Lyric){
-				var animPicURL = '';
-				var fullLyric = data.query.results.GetLyricResult.Lyric.replace(/&amp;quot;/gi,'"').split('\n'); //Array of lyrics, split by newline
+				var animPicURL = '',
+						fullLyric = data.query.results.GetLyricResult.Lyric.replace(/&amp;quot;/gi,'"').split('\n'); //Array of lyrics, split by newline
 
 				//Call the meat of our logic: crawling through lines to find tweet-sized chunks with rhymes, and then pick a random one.
 				var rhymes = findRhymes(fullLyric);
@@ -346,8 +340,8 @@ function findRhymes(fullLyric) {
 	}
 }
 
-// every 60 minutes, make and tweet a rhyming rap lyric with a picture of a cat,
-// offset by 30min, make and tweet a rhyming country lyric with a picture of a dog.
+// every 30 minutes, make and tweet with alternately rhyming rap lyric and a picture of a cat,
+// or a rhyming country lyric with a picture of a dog.
 setInterval(function() {
 	try {
 		makeLyrpicTwit();
@@ -364,7 +358,7 @@ setInterval(function() {
 },generateDelay); 																//Set to 30 minute period at top
 
 
-//Every 12 hours, dump a list of words that CMUDict couldn't parse to the log and empty the list
+//Every 12 hours, dump a list of words that CMUDict couldn't parse to the log and reset the list
 setInterval(function() {
 	console.log(cmuNotFound);
 	cmuNotFound = [];
