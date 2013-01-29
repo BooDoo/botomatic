@@ -16,10 +16,15 @@ SETUP
 =================
 
 To prep your node environment, run:
+
 > npm install express
+
 > npm install twit
+
 > npm install node-restclient
+
 > npm install cmudict
+
 
 You'll also want to set environment variables for your API keys/secrets, &c.
 
