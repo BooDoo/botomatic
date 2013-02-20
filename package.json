@@ -1,0 +1,38 @@
+{
+  "name": "lyrpictweet",
+  "description": "Get a rhyme; get a picture; tweet it!",
+  "version": "0.0.8",
+  "homepage": "https://github.com/BooDoo/lyrpictweet",
+  "author": {
+    "name": "Joel McCoy",
+    "email": "joelmccoy@gmail.com",
+    "url": "http://whistling-fish.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/BooDoo/lyrpictweet"
+  },
+  "bugs": {
+    "url": "https://github.com/BooDoo/lyrpictweet/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/BooDoo/lyrpictweet/blob/master/LICENSE"
+    }
+  ],
+  "dependencies": {
+    "express": "3.0.x",
+    "twit": "1.0.x",
+    "node-restclient": "0.0.x",
+    "cmudict": "1.0.x"
+  },
+  "engines": {
+    "node": "0.8.x",
+    "npm": "1.1.x"
+  },
+  "subdomain": "gcatpix",
+  "scripts": {
+    "start": "lyrpictweet.js"
+  }
+}

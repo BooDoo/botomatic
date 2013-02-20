@@ -11,6 +11,7 @@
 */
 
 var restclient 	= require('node-restclient'),
+		APICONFIG		= require('config.js').credentials,
 		Twit 				= (process.env['NODE_ENV'] == 'production' ? require('twit') : {}),	//Only load Twit module if in production
 		express 		= require('express'),
 		app 				= express(),
@@ -33,19 +34,9 @@ var generateDelay = (process.env['NODE_ENV'] == 'production' ? 60000*30 : 30000)
 // Using output account's consumer_* keys and App's generated read/write access_* keys 
 // Only loaded/used if in production environment
 if (process.env['NODE_ENV'] == 'production') {
-	var catT = new Twit({
-		consumer_key:					process.env['CAT_TWITTER_CONSUMER_KEY'],
-		consumer_secret: 			process.env['CAT_TWITTER_CONSUMER_SECRET'],
-		access_token: 				process.env['CAT_TWITTER_ACCESS_TOKEN'],
-		access_token_secret: 	process.env['CAT_TWITTER_ACCESS_TOKEN_SECRET']
-	});
+	var catT = new Twit(APICONFIG.gcatpix);
 
-	var dogT = new Twit({
-		consumer_key:					process.env['DOG_TWITTER_CONSUMER_KEY'],
-		consumer_secret: 			process.env['DOG_TWITTER_CONSUMER_SECRET'],
-		access_token: 				process.env['DOG_TWITTER_ACCESS_TOKEN'],
-		access_token_secret: 	process.env['DOG_TWITTER_ACCESS_TOKEN_SECRET']
-	});
+	var dogT = new Twit(APICONFIG.cwdogpix);
 }
 
 //Get Flickr API key/secret from environment variables
@@ -229,30 +220,36 @@ function makeLyrpicTwit() {
 
 //Container object for a word to hold its literal content and phonemes from CMUDict
 function Word(literal) {
-  var that = {};
+	if (!(this instanceof Word)) {
+		return new Word(literal);
+	}
 
-	that.phonemes = cmudict.get(literal);
-	if (typeof that.phonemes == 'undefined') return undefined;
+  var i, ii;
 
-	that.phonemes = that.phonemes.trim().split(' ');
-  that.literal = literal;
-  that.start = that.phonemes[0];
-  that.ending = that.phonemes[that.phonemes.length - 1];
+  this.literal = literal;
+	this.phonemes = cmudict.get(literal);
 
-  //Strip leading consonants only for a strict rhyme
-	for (var i = 0, ii = that.phonemes.length; i < ii && that.phonemes[i].match(/^[^AEIOU]/i); i++);
-	that.rhymeStrict = that.phonemes.slice(i);
+	if (typeof this.phonemes === 'undefined') {
+		this.phonemes = null; //Not found in CMUDict!
+	} else {
+		this.phonemes = this.phonemes.trim().split(' ');  
+	  this.start = this.phonemes[0];
+	  this.end = this.phonemes[this.phonemes.length - 1];
 
-	//Phonemes for last vowel sound through end of word for a greedy rhyme
-	for (var i = that.phonemes.length - 1; i >= 0 && that.phonemes[i].match(/^[AEIOU]/i); i--);
-	that.rhymeGreedy = that.phonemes.slice(--i);
+	  //Strip leading consonants only for a strict rhyme
+		for (var i = 0, ii = this.phonemes.length; i < ii && this.phonemes[i].match(/^[^AEIOU]/i); i++);
+		this.rhymeStrict = this.phonemes.slice(i);
 
-	//If asking for a string of the word, pass its non-phonetic version
-  that.toString= function() {
-      return that.literal;
-  };
+		//Phonemes for last vowel sound through end of word for a greedy rhyme
+		for (var i = this.phonemes.length - 1; i >= 0 && this.phonemes[i].match(/^[AEIOU]/i); i--);
+		this.rhymeGreedy = this.phonemes.slice(--i);
 
-  return that;
+		//If asking for a string of the word, pass its non-phonetic version
+	  this.toString= function() {
+	      return this.literal;
+	  };
+
+	}
 }
 
 //Working now? Want to be more flexible, though.
