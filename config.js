@@ -1,6 +1,5 @@
-module.exports = {
-  credentials: {
-    gcatpix : 
+var credentials = {
+    twitter_gcatpix : 
     {
       service:              "twitter",
       consumer_key:         process.env['CAT_TWITTER_CONSUMER_KEY'],
@@ -9,7 +8,7 @@ module.exports = {
       access_token_secret:  process.env['CAT_TWITTER_ACCESS_TOKEN_SECRET']
     },
    
-    cwdogpix:
+    twitter_cwdogpix:
     {
       service:              "twitter",
       consumer_key:         process.env['DOG_TWITTER_CONSUMER_KEY'],
@@ -18,16 +17,15 @@ module.exports = {
       access_token_secret:  process.env['DOG_TWITTER_ACCESS_TOKEN_SECRET']
     },
    
-    flickr:
+    flickr_boodoo:
     {
       service:              "flickr",
-      flickr_key:           process.env['GCATPIX_FLICKR_KEY'],
-      flickr_secret:        process.env['GCATPIX_FLICKR_SECRET']
+      flickr_key:           process.env['BOODOO_FLICKR_KEY'],
+      flickr_secret:        process.env['BOODOO_FLICKR_SECRET']
     }
   },
 
-  songSets:
-  {
+  songSets = {
     rap:
     { 
       "DOOM": ['Dead', 'Doomsday', 'Finest', 'Drawls', 'Tick', 'Beer', 'Ladies', 'Flow', 'Hey', 'Greenbacks', 'Vomitspit', 'Kookies', 'Frenz'], 
@@ -78,27 +76,30 @@ module.exports = {
       "Adkins": ['Thinkin', 'Arlington', 'Chrome', 'Light', 'Badonkadonk', 'Mama', 'Turned', 'Payin', 'Tryin', 'Ladies', 'Lonely', 'Metropolis', 'More', 'Heaven', 'Taillights', 'Rough', 'Songs', 'Swing', 'Then', 'Texas', 'Working', 'Back'],
       "McEntire": ['Still', 'Even', 'Clown', 'Does', 'Fancy', 'Broken', 'Forever', 'Gets', 'Blue', 'Know', 'Rather', 'See', 'Survivor', 'Call', 'Little', 'Find', 'Sister', 'Fool', 'Own', 'Honest', 'Late', 'Rumor', 'John', 'Leave', 'Sunday', 'Back', 'Talking', 'Fear', 'Greatest', 'Hunter', 'Georgia', 'Walk', 'About', 'England', 'Heard', 'Lie', 'Leaving']
     }
-  }
+  },
 
-  bots:
-  {
+  bots = {
     rapcats:
     {
-      twitter:              credentials.gcatpix,
-      flickr:               credentials.flickr,
+      handle:               "rapcats",
+      twitter:              credentials.twitter_gcatpix,
+      flickr:               credentials.flickr_boodoo,
       tags:                 "cat%2C+-caterpillar",
       songs:                songSets.rap,
-      interval:             30*60000,
+      interval:             process.env['NODE_ENV'] == 'production' ? 60000*30 : 30000
     },
     
     countrydogs:
     {
-      twitter:              credentials.cwdogpix,
-      flickr:               credentials.flickr,
+      handle:               "countrydogs",
+      twitter:              credentials.twitter_cwdogpix,
+      flickr:               credentials.flickr_boodoo,
       tags:                 "dog",
       songs:                songSets.country,
-      interval:             30*60000,
+      interval:             process.env['NODE_ENV'] == 'production' ? 60000*30 : 30000
     }
-  }
+  };
 
-}
+module.exports.credentials = credentials;
+module.exports.songSets = songSets;
+module.exports.bots = bots;
