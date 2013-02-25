@@ -5,7 +5,7 @@ pairs it with a random image from Flickr, and then tweets the result.
 by Joel McCoy (@BooDooPerson)
 
 Phonemes for rhyming are taken from the CMU Pronouncing Dictionary, made avaiable as node-cmudict by Nathaniel K Smith.
-express is used as a placeholder server for fielding HTTP requests. (reuired by NodeJitsu)
+express is used as a placeholder server for fielding HTTP requests. (required by NodeJitsu)
 node-restclient is used for making calls to Flickr and YQL.
 Originally built atop Darius Kazemi's Metaphor-a-Minute.
 
