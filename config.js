@@ -1,3 +1,8 @@
+//Three objects:
+//bots - configuration for each lyric/picture pairing robot
+//songSets - hash of {artist: [title1, title2], ...} to generate artist/title pair for song look-up
+//credentials - API keys/secrets
+
 var credentials = {
     twitter_gcatpix : 
     {

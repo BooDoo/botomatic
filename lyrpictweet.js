@@ -1,13 +1,16 @@
 /*
-  This script takes a random tweet-size lyric (preferably rhyming) from one of the specified songs on ChartLyrics, pairs it 
-  with a random image from Flickr, and then tweets the result.
+This node application extracts a random tweet-size lyric (preferably rhyming) from one of specified songs on ChartLyrics, 
+pairs it with a random image from Flickr, and then tweets the result.
 
-  This was built atop Darius Kazemi's Metaphor-a-Minute. Phonemes for rhyming are taken from the CMU Pronouncing Dictionary, 
-  made avaiable as node-cmudict by Nathaniel K Smith. express is used as a placeholder server for fielding HTTP requests. node-restclient is used for making calls to Flickr and YQL.
+by Joel McCoy (@BooDooPerson)
 
-  Other work by Joel McCoy.
+Phonemes for rhyming are taken from the CMU Pronouncing Dictionary, made avaiable as node-cmudict by Nathaniel K Smith.
+express is used as a placeholder server for fielding HTTP requests. (reuired by NodeJitsu)
+node-restclient is used for making calls to Flickr and YQL.
+Originally built atop Darius Kazemi's Metaphor-a-Minute.
 
-  Currently this is used for Twitter bots @GCatPix and @CWDogPix.
+Currently used for Twitter bots @GCatPix and @CWDogPix.
+
 */
 
 var restclient  = require('node-restclient'),
@@ -42,19 +45,19 @@ function randomFromArray(arr) {
   }
 
   else {return null;}
-};
+}
 
-//Form the request URL for retrieving ChartLyrics API data through YQL.
-function makeYQL(song) {
+//Form the request URL for retrieving ChartLyrics API data
+function makeChartLyricsURL(song) {
+    return 'http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?'
+            + 'artist=' + song.artist + '&song=' + song.title;
+}
 
-  var lyricURL = 'http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?'
-               + 'artist=' + song.artist + '&song=' + song.title,
-
-      lyricYQL = 'http://query.yahooapis.com/v1/public/yql?q='
-               + encodeURIComponent('select * from xml where url="' + lyricURL + '"')
-               + '&format=json';
-
-  return lyricYQL;
+function makeYQL(url) {
+    var lyricYQL = 'http://query.yahooapis.com/v1/public/yql?q='
+                 + encodeURIComponent('select * from xml where url="' + url + '"')
+                 + '&format=json';
+    return lyricYQL;
 }
 
 //Send in the bots
@@ -67,7 +70,7 @@ function Bot (botConfig) {
 
   for (p in botConfig) {
     this[p] = botConfig[p];
-  };
+  }
 
   if (typeof this.artists === 'undefined') {
     this.artists = [];
@@ -84,10 +87,10 @@ function Bot (botConfig) {
 }
 
 Bot.prototype.getArtistTitlePair = function() {
-  artist = randomFromArray(this.artists);
-  title = randomFromArray(this.songs[artist]);
+  var artist = randomFromArray(this.artists),
+      title = randomFromArray(this.songs[artist]);
   return {"artist": artist, "title": title};
-}
+};
 
 // Retrieve page somewhere 1-41 from Flickr photos with particular tags and
 // CC or more liberal license, sorted by relevance:
@@ -109,7 +112,7 @@ Bot.prototype.getFlickrURL = function (pagecount) {
                     "nojsoncallback=1";
   
   return flickrURL;
-}
+};
 
 Bot.bots = {};    //Holder for Bot objects
 
@@ -216,7 +219,7 @@ function findRhymes(fullLyric) {
               wordsToRhyme.push(lastWord);                                                  //|-----Add last word to rhyme pool and move on
             }
         } else {                                                                            //|-If existing + this + link will be too long to tweet
-          (wordsToRhyme.length > 1 && isRhymeInArray(wordsToRhyme)) ? theRhymes.push(tweetLyric) : nonRhymes.push(tweetLyric)
+          (wordsToRhyme.length > 1 && isRhymeInArray(wordsToRhyme)) ? theRhymes.push(tweetLyric) : nonRhymes.push(tweetLyric);
           tweetLyric = line;                                                                     //|--set this line as the root for a new potential tweet
           wordsToRhyme = [lastWord];                                                        //|--seed grouping of words to check for rhyme with last word
         }
@@ -237,17 +240,16 @@ function makeLyrpicTweet(bot) {
   var T = bot.T,
       tweetContent = '',
       artistAndTitle = bot.getArtistTitlePair(),
-      yql = makeYQL(artistAndTitle);
+      yql = makeYQL(makeChartLyricsURL(artistAndTitle));
   
   console.log(artistAndTitle);
 
-  var lyricReq = restclient.get(yql,function(data){
+  restclient.get(yql,function(data){
     if(data.query.results && data.query.results.GetLyricResult && data.query.results.GetLyricResult.Lyric){
       var rhymes = [],
           flickrURL,
           picURL = '',
-          fullLyric = data.query.results.GetLyricResult.Lyric.replace(/&amp;quot;/gi,'"').split('\n'), //Array of lyrics, split by newline
-          animReq = {},
+          fullLyric = data.query.results.GetLyricResult.Lyric.replace(/&amp;quot;/gi,'"').split('\n'); //Array of lyrics, split by newline
 
       //Call the meat of our logic: crawling through lines to find tweet-sized chunks with rhymes, and then pick a random one.
       rhymes = findRhymes(fullLyric);
@@ -258,9 +260,9 @@ function makeLyrpicTweet(bot) {
         return 0;
       }
 
-      //Then go get the animPicURL (cat or dog, depending on catTurn boolean)
+      //Then go get Flickr URL (using 'tags' from Bot)
       flickrURL = bot.getFlickrURL();
-      animReq = restclient.get(flickrURL,function(animData) {
+      restclient.get(flickrURL,function(animData) {
         //Grab one of the 100 photos on this page at "random"
         var randomPhotoIndex = Math.floor(Math.random() * 100), // * animData.photos.photo.length instead? In case fewer than 100?
             randomPhoto = animData.photos.photo[randomPhotoIndex];
@@ -271,7 +273,7 @@ function makeLyrpicTweet(bot) {
         console.log(tweetContent);
 
         //Only tweet if in production environment
-        if (process.env['NODE_ENV'] == 'production') {
+        if (process.env.NODE_ENV == 'production') {
           T.post('statuses/update', { status: tweetContent}, function(err, reply) {
             console.log("error: " + err);
             console.log("reply: " + reply);
@@ -298,10 +300,10 @@ function makeLyrpicTweet(bot) {
 
   for (botHandle in botConfigs) {
     setTimeout(function(botConfig) {
-      var bot = new Bot(botConfig);
+      new Bot(botConfig);
     }, stagger, botConfigs[botHandle]);
     
     stagger = botConfigs[botHandle].interval / 2;
   }
 
-})(CONFIG.bots)
+})(CONFIG.bots);
