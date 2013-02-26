@@ -355,11 +355,14 @@ function tweetFromQueue(bot) {
   if (typeof queuedTweet === 'undefined') {
       return;
   } else {
-    T.post('statuses/update', queuedTweet, function(err, reply) {
-      if (err) {
-        console.log(err); //Should actually catch this.
-      }
-    });
+    if (process.env['NODE_ENV'] === 'production') {
+      T.post('statuses/update', queuedTweet, function(err, reply) {
+        if (err) {
+          console.log(err); //Should actually catch this.
+        }
+      });
+    }
+    console.log(queuedTweet.status);
   }
 }
 
