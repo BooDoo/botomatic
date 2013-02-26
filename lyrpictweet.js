@@ -149,6 +149,29 @@ Word.prototype.toString = function() {
   return this.literal;
 };
 
+Word.prototype.countSyllables = function() {
+  var p, pp,
+      first;
+
+  if (this.phonemes === null) {
+    //Add a fallback to Wordnik API here?
+    this.syllableCount = null;
+  } else {
+    for (p = 0, pp = this.phonemes.length, this.syllableCount = 0; p < pp; p++) {
+      first = this.phonemes[p].charAt(0);
+      if  (first == 'A' ||
+           first == 'E' ||
+           first == 'I' ||
+           first == 'O' ||
+           first == 'U') {
+        this.syllableCount++;
+      }
+    }
+  }
+
+  return this.syllableCount;
+};
+
 Word.words = {};    //Holder for caching Word objects
 
 //Working now? Want to be more flexible, though.
@@ -161,6 +184,10 @@ function isRhymeInArray(words) {
   for (; w < ww; w += 1) {
     word = words[w];
     
+    if (word instanceof String) {
+      word = new Word(word);
+    }
+
     if (word.phonemes) {
       //console.log('words[' + w + ']: ' + words[w]);
       toCompare = word.rhymeGreedy.join(' ').replace(/\d/g,'');                                 //Strip numbers for looser vowel matching
@@ -233,6 +260,73 @@ function findRhymes(fullLyric) {
   } else {
     return nonRhymes;
   }
+}
+
+//Search 100 recent tweets
+function syllableFilter(targetSyllables, searchParams) {
+
+  if (typeof searchParams === undefined) {
+    searchParams  = { 
+      "q": 'lang:en', 
+      "result-type": 'recent', 
+      "count": 100, 
+    }
+  };
+
+  T.get('search/tweets', searchParams, function(err, reply) {
+    if (err) console.log(err);
+
+    var s, ss,
+        t,
+        text,
+        sepCount,
+        sCount,
+        tArr,
+        w, ww,
+        word,
+        tweetContent = '',
+        wordSep       = /^\w|[^\w']+(?!\W*$)/g,
+        stripEntities = /[@#].+?[\S]+?\s|[@#][^@#]+$|http:\/\/[\S]+|[,\|\\\/\-\.]+|:\-?[dxpc3be]/gi; //remove mentions, hashtags, and common emoticons
+
+    for (s = 0, ss = reply.statuses.length; s < ss; s++) {
+      t = reply.statuses[s];
+      text = t.text.replace(stripEntities, '').trim();
+      sepCount = (text.match(wordSep) || []).length;
+      
+      if (text.length + t.user.screen_name + 26 > 140 || sepCount >= targetSyllables || sepCount < 1) {
+        //console.log(('REJECTED: ').red);
+        //console.log((text).grey);
+        continue;               //Quick filter for usable tweets.
+      };
+
+      //console.log(('SEEMS LEGIT: ').green)
+      //console.log((text).grey)
+      sCount = 0;
+      tArr = text.replace('-',' ').split(' ');
+
+      for (w = 0, ww= tArr.length; w < ww; w++) {
+        if (sCount > targetSyllables) {
+          continue;
+        };
+        
+        word = tArr[w].replace(/^\W+|\W+$/g,'').trim();
+        if (word == '') {
+          continue;
+        };
+        
+        sCount += (new Word(word).countSyllables() || 1000); //intentionally overrun syllable target is no pronunciation found
+        if (word === 'our' || word === 'hour') sCount--; //adjust down syllable count where we disagree with CMUDict
+        //console.log('+ ' + word + '= ' + sCount);
+      }
+      if (sCount === targetSyllables) {
+        //console.log(('We got one! : ').green);
+        console.log(text);
+        tweetContent = text + ' / doo-dah, doo-dah…';
+        tweetQueue.push({status: tweetContent, in_reply_to_status_id: t.id, });
+      }
+    }
+    //console.log(tweetQueue);
+  })
 }
 
 //Do the damn thang
