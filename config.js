@@ -1,4 +1,4 @@
-//Three objects:
+ //Three objects:
 //bots - configuration for each lyric/picture pairing robot
 //songSets - hash of {artist: [title1, title2], ...} to generate artist/title pair for song look-up
 //credentials - API keys/secrets
@@ -21,7 +21,16 @@ var credentials = {
       access_token:         process.env['DOG_TWITTER_ACCESS_TOKEN'],
       access_token_secret:  process.env['DOG_TWITTER_ACCESS_TOKEN_SECRET']
     },
-   
+
+    twitter_ct_races:
+    {
+      service:              "twitter",
+      consumer_key:         process.env['CTR_TWITTER_CONSUMER_KEY'],
+      consumer_secet:       process.env['CTR_TWITTER_CONSUMER_SECRET'],
+      access_token:         process.env['CTR_TWITTER_ACCESS_TOKEN'],
+      access_token_secret:  process.env['CTR_TWITTER_ACCESS_TOKEN_SECRET']
+    },
+
     flickr_boodoo:
     {
       service:              "flickr",
@@ -86,22 +95,35 @@ var credentials = {
   bots = {
     rapcats:
     {
+      type:                 "lyrpictweet",
       handle:               "rapcats",
       twitter:              credentials.twitter_gcatpix,
       flickr:               credentials.flickr_boodoo,
       tags:                 "cat%2C+-caterpillar",
       songs:                songSets.rap,
-      interval:             process.env['NODE_ENV'] == 'production' ? 60000*30 : 30000
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
     },
     
     countrydogs:
     {
+      type:                 "lyrpictweet",
       handle:               "countrydogs",
       twitter:              credentials.twitter_cwdogpix,
       flickr:               credentials.flickr_boodoo,
       tags:                 "dog",
       songs:                songSets.country,
-      interval:             process.env['NODE_ENV'] == 'production' ? 60000*30 : 30000
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
+    },
+    
+    camptownraces:
+    {
+      type:                 "syllablecount",
+      handle:               "camptownraces",
+      twitter:              credentials.twitter_ct_races,
+      targetSyllables:      7,
+      suffix:               ' / doo-dah, doo-dah…',
+      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*10 : 30000,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000
     }
   };
 

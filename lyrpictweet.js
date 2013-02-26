@@ -72,16 +72,28 @@ function Bot (botConfig) {
     this[p] = botConfig[p];
   }
 
-  if (typeof this.artists === 'undefined') {
-    this.artists = [];
-    for (key in this.songs) {
-      this.artists.push(key);
-    }
-  }
-
-  console.log(JSON.stringify(this.tags));
   this.T = new Twit(this.twitter);
-  this.intervalId = setInterval(makeLyrpicTweet, this.interval, this);
+  
+  //Specialized setup by type (TODO: move to Child constructors)
+  if (this.type === 'lyrpictweet') {
+      
+    if (typeof this.artists === 'undefined') {
+      this.artists = [];
+      for (key in this.songs) {
+        this.artists.push(key);
+      }
+    }
+    
+    this.intervalId = setInterval(makeLyrpicTweet, this.interval, this);
+    
+  } elseif (this.type === 'syllablecount') {    
+    if (typeof this.queueMax === 'undefined') {
+        queueMax = 300; //Arbitrary limit on queue size if none given
+    }
+    this.tweetQueue = [];
+    this.searchIntervalId = setInterval(syllableFilter, this.searchInterval, this);
+    this.intervalId = setInterval(tweetFromQueue, this.interval, this);
+  }
 
   Bot.bots[this.handle] = this;
 }
@@ -94,7 +106,7 @@ Bot.prototype.getArtistTitlePair = function() {
 
 // Retrieve page somewhere 1-41 from Flickr photos with particular tags and
 // CC or more liberal license, sorted by relevance:
-Bot.prototype.getFlickrURL = function (pagecount) {
+Bot.prototype.getFlickrURL = function (pageCount) {
   if (typeof pageCount === 'undefined') {
     pageCount = 41;
   }
@@ -262,19 +274,21 @@ function findRhymes(fullLyric) {
   }
 }
 
-//Search 100 recent tweets
-function syllableFilter(targetSyllables, searchParams) {
+//Search 100 recent tweets for those was certain number of syllables
+function syllableFilter(bot) {
 
-  if (typeof searchParams === undefined) {
-    searchParams  = { 
-      "q": 'lang:en', 
-      "result-type": 'recent', 
-      "count": 100, 
-    }
-  };
+    var T = bot.T,
+        tweetQueue = bot.tweetQueue,
+        queueMax = bot.queueMax,
+        targetSyllables = bot.targetSyllables,
+        searchParams  = { 
+          "q": 'lang:en', 
+          "result-type": 'recent', 
+          "count": 100, 
+        };
 
   T.get('search/tweets', searchParams, function(err, reply) {
-    if (err) console.log(err);
+    if (err) {console.log(err);}
 
     var s, ss,
         t,
@@ -288,31 +302,31 @@ function syllableFilter(targetSyllables, searchParams) {
         wordSep       = /^\w|[^\w']+(?!\W*$)/g,
         stripEntities = /[@#].+?[\S]+?\s|[@#][^@#]+$|http:\/\/[\S]+|[,\|\\\/\-\.]+|:\-?[dxpc3be]/gi; //remove mentions, hashtags, and common emoticons
 
-    for (s = 0, ss = reply.statuses.length; s < ss; s++) {
+    for (s = 0, ss = reply.statuses.length, sCount = 0; s < ss; s++) {
       t = reply.statuses[s];
       text = t.text.replace(stripEntities, '').trim();
       sepCount = (text.match(wordSep) || []).length;
       
-      if (text.length + t.user.screen_name + 26 > 140 || sepCount >= targetSyllables || sepCount < 1) {
+      //Quick filter for tweets with more words than we want syllables.
+      if (sepCount >= targetSyllables || sepCount < 1) {
         //console.log(('REJECTED: ').red);
         //console.log((text).grey);
-        continue;               //Quick filter for usable tweets.
-      };
+        continue;               
+      }
 
       //console.log(('SEEMS LEGIT: ').green)
       //console.log((text).grey)
-      sCount = 0;
       tArr = text.replace('-',' ').split(' ');
 
       for (w = 0, ww= tArr.length; w < ww; w++) {
         if (sCount > targetSyllables) {
           continue;
-        };
+        }
         
         word = tArr[w].replace(/^\W+|\W+$/g,'').trim();
-        if (word == '') {
+        if (word === '') {
           continue;
-        };
+        }
         
         sCount += (new Word(word).countSyllables() || 1000); //intentionally overrun syllable target is no pronunciation found
         if (word === 'our' || word === 'hour') sCount--; //adjust down syllable count where we disagree with CMUDict
@@ -320,16 +334,36 @@ function syllableFilter(targetSyllables, searchParams) {
       }
       if (sCount === targetSyllables) {
         //console.log(('We got one! : ').green);
-        console.log(text);
-        tweetContent = text + ' / doo-dah, doo-dah…';
-        tweetQueue.push({status: tweetContent, in_reply_to_status_id: t.id, });
+        //console.log(text);
+        tweetContent = (bot.prefix || '') + text + (bot.suffix || '');
+        tweetQueue.push({status: tweetContent, in_reply_to_status_id: t.id});
       }
     }
-    //console.log(tweetQueue);
-  })
+    
+    //Keep our queue under a certain size, ditching oldest Tweets
+    if (tweetQueue.length > queueMax) {
+        tweetQueue = tweetQueue.slice(queueMax - 50);
+    }
+  });
 }
 
-//Do the damn thang
+//Send Tweet from Bot's prepared array
+function tweetFromQueue(bot) {
+  var T = bot.T,
+      queuedTweet = bot.tweetQueue.shift();
+
+  if (typeof queuedTweet === 'undefined') {
+      return;
+  } else {
+    T.post('statuses/update', queuedTweet, function(err, reply) {
+      if (err) {
+        console.log(err); //Should actually catch this.
+      }
+    });
+  }
+}
+
+//Main function for bots of type 'lyrpictweet'
 function makeLyrpicTweet(bot) {
   var T = bot.T,
       tweetContent = '',
