@@ -273,7 +273,7 @@ function findRhymes(fullLyric) {
   } else {
     return nonRhymes;
   }
-};
+}
 
 //Search 100 recent tweets for those with certain number of syllables
 Bot.prototype.syllableFilter = function() {
