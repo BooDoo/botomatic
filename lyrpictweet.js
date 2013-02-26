@@ -86,9 +86,9 @@ function Bot (botConfig) {
     
     this.intervalId = setInterval(makeLyrpicTweet, this.interval, this);
     
-  } elseif (this.type === 'syllablecount') {    
+  } else if (this.type === 'syllablecount') {    
     if (typeof this.queueMax === 'undefined') {
-        queueMax = 300; //Arbitrary limit on queue size if none given
+        this.queueMax = 300; //Arbitrary limit on queue size if none given
     }
     this.tweetQueue = [];
     this.searchIntervalId = setInterval(syllableFilter, this.searchInterval, this);
@@ -300,9 +300,9 @@ function syllableFilter(bot) {
         word,
         tweetContent = '',
         wordSep       = /^\w|[^\w']+(?!\W*$)/g,
-        stripEntities = /[@#].+?[\S]+?\s|[@#][^@#]+$|http:\/\/[\S]+|[,\|\\\/\-\.]+|:\-?[dxpc3be]/gi; //remove mentions, hashtags, and common emoticons
+        stripEntities = /^RT |[@#].+?[\S]+?\s|[@#][^@#]+$|http:\/\/[\S]+|[,\|\\\/\-\.]+|:\-?[dxpc3be]/gi; //remove RT prefix, mentions, hashtags, common emoticons
 
-    for (s = 0, ss = reply.statuses.length, sCount = 0; s < ss; s++) {
+    for (s = 0, ss = reply.statuses.length; s < ss; s++) {
       t = reply.statuses[s];
       text = t.text.replace(stripEntities, '').trim();
       sepCount = (text.match(wordSep) || []).length;
@@ -318,7 +318,7 @@ function syllableFilter(bot) {
       //console.log((text).grey)
       tArr = text.replace('-',' ').split(' ');
 
-      for (w = 0, ww= tArr.length; w < ww; w++) {
+      for (w = 0, ww= tArr.length, sCount = 0; w < ww; w++) {
         if (sCount > targetSyllables) {
           continue;
         }

@@ -26,7 +26,7 @@ var credentials = {
     {
       service:              "twitter",
       consumer_key:         process.env['CTR_TWITTER_CONSUMER_KEY'],
-      consumer_secet:       process.env['CTR_TWITTER_CONSUMER_SECRET'],
+      consumer_secret:       process.env['CTR_TWITTER_CONSUMER_SECRET'],
       access_token:         process.env['CTR_TWITTER_ACCESS_TOKEN'],
       access_token_secret:  process.env['CTR_TWITTER_ACCESS_TOKEN_SECRET']
     },
