@@ -60,74 +60,6 @@ function makeYQL(url) {
     return lyricYQL;
 }
 
-//Send in the bots
-function Bot (botConfig) {
-  if (!(this instanceof Bot)) {
-    return new Bot(botConfig);
-  }
-
-  var p, key;
-
-  for (p in botConfig) {
-    this[p] = botConfig[p];
-  }
-
-  this.T = new Twit(this.twitter);
-  
-  //Specialized setup by type (TODO: move to Child constructors)
-  if (this.type === 'lyrpictweet') {
-      
-    if (typeof this.artists === 'undefined') {
-      this.artists = [];
-      for (key in this.songs) {
-        this.artists.push(key);
-      }
-    }
-    
-    this.intervalId = setInterval(makeLyrpicTweet, this.interval, this);
-    
-  } else if (this.type === 'syllablecount') {    
-    if (typeof this.queueMax === 'undefined') {
-        this.queueMax = 300; //Arbitrary limit on queue size if none given
-    }
-    this.tweetQueue = [];
-    this.searchIntervalId = setInterval(syllableFilter, this.searchInterval, this);
-    this.intervalId = setInterval(tweetFromQueue, this.interval, this);
-  }
-
-  Bot.bots[this.handle] = this;
-}
-
-Bot.prototype.getArtistTitlePair = function() {
-  var artist = randomFromArray(this.artists),
-      title = randomFromArray(this.songs[artist]);
-  return {"artist": artist, "title": title};
-};
-
-// Retrieve page somewhere 1-41 from Flickr photos with particular tags and
-// CC or more liberal license, sorted by relevance:
-Bot.prototype.getFlickrURL = function (pageCount) {
-  if (typeof pageCount === 'undefined') {
-    pageCount = 41;
-  }
-  
-  var randomPage =  Math.floor((Math.random() * pageCount) + 1),
-      flickrURL  =  "http://api.flickr.com/services/rest/?method=flickr.photos.search&" +
-                    "api_key=" + this.flickr.flickr_key + "&" +
-                    "tags=" + this.tags + "&" +
-                    "license=1%7C2%7C3%7C4%7C5%7C6%7C7%7C8&" +
-                    "sort=relevance&" +
-                    "safe_search=1&" +
-                    "content_type=1&" +
-                    "page=" + randomPage + "&" +
-                    "format=json&" +
-                    "nojsoncallback=1";
-  
-  return flickrURL;
-};
-
-Bot.bots = {};    //Holder for Bot objects
-
 //Constructor for an object to hold a word and its phonemes from CMUDict
 function Word (literal) {
   if (!(this instanceof Word)) {
@@ -162,29 +94,98 @@ Word.prototype.toString = function() {
 };
 
 Word.prototype.countSyllables = function() {
-  var p, pp,
+  var word = this,
+      p, pp,
       first;
 
-  if (this.phonemes === null) {
+  if (word.phonemes === null) {
     //Add a fallback to Wordnik API here?
-    this.syllableCount = null;
+    word.syllableCount = null;
   } else {
-    for (p = 0, pp = this.phonemes.length, this.syllableCount = 0; p < pp; p++) {
-      first = this.phonemes[p].charAt(0);
+    for (p = 0, pp = word.phonemes.length, word.syllableCount = 0; p < pp; p++) {
+      first = word.phonemes[p].charAt(0);
       if  (first == 'A' ||
            first == 'E' ||
            first == 'I' ||
            first == 'O' ||
            first == 'U') {
-        this.syllableCount++;
+        word.syllableCount++;
       }
     }
   }
 
-  return this.syllableCount;
+  return word.syllableCount;
 };
 
 Word.words = {};    //Holder for caching Word objects
+
+//Send in the bots
+function Bot (botConfig) {
+  if (!(this instanceof Bot)) {
+    return new Bot(botConfig);
+  }
+
+  var p, key;
+
+  for (p in botConfig) {
+    this[p] = botConfig[p];
+  }
+
+  this.T = new Twit(this.twitter);
+  
+  //Specialized setup by type (TODO: move to Child constructors)
+  if (this.type === 'lyrpictweet') {
+      
+    if (typeof this.artists === 'undefined') {
+      this.artists = [];
+      for (key in this.songs) {
+        this.artists.push(key);
+      }
+    }
+    
+    this.intervalId = setInterval(this.makeLyrpicTweet, this.interval, this);
+    
+  } else if (this.type === 'syllablecount') {    
+    if (typeof this.queueMax === 'undefined') {
+        this.queueMax = 300; //Arbitrary limit on queue size if none given
+    }
+    this.tweetQueue = [];
+    this.searchIntervalId = setInterval(this.syllableFilter, this.searchInterval, this);
+    this.intervalId = setInterval(this.tweetFromQueue, this.interval, this);
+  }
+
+  Bot.bots[this.handle] = this;
+}
+
+Bot.prototype.getArtistTitlePair = function() {
+  var artist = randomFromArray(this.artists),
+      title = randomFromArray(this.songs[artist]);
+  return {"artist": artist, "title": title};
+};
+
+// Retrieve page somewhere 1-41 from Flickr photos with particular tags and
+// CC or more liberal license, sorted by relevance:
+Bot.prototype.getFlickrURL = function (pageCount) {
+  if (typeof pageCount === 'undefined') {
+    pageCount = 41;
+  }
+  
+  var randomPage =  Math.floor((Math.random() * pageCount) + 1),
+      flickrURL  =  "http://api.flickr.com/services/rest/?method=flickr.photos.search&" +
+                    "api_key=" + this.flickr.flickr_key + "&" +
+                    "tags=" + this.tags + "&" +
+                    "license=1%7C2%7C3%7C4%7C5%7C6%7C7%7C8&" +
+                    "sort=relevance&" +
+                    "safe_search=1&" +
+                    "content_type=1&" +
+                    "page=" + randomPage + "&" +
+                    "format=json&" +
+                    "nojsoncallback=1";
+  
+  return flickrURL;
+};
+
+Bot.bots = {};    //Holder for Bot objects
 
 //Working now? Want to be more flexible, though.
 function isRhymeInArray(words) {
@@ -272,12 +273,13 @@ function findRhymes(fullLyric) {
   } else {
     return nonRhymes;
   }
-}
+};
 
 //Search 100 recent tweets for those with certain number of syllables
-function syllableFilter(bot) {
+Bot.prototype.syllableFilter = function() {
 
-    var T = bot.T,
+    var bot = this,
+        T = bot.T,
         tweetQueue = bot.tweetQueue,
         queueMax = bot.queueMax,
         prefix = bot.prefix || '',
@@ -338,11 +340,12 @@ function syllableFilter(bot) {
         tweetQueue = tweetQueue.slice(queueMax - 50);
     }
   });
-}
+};
 
 //Send Tweet from Bot's prepared array
-function tweetFromQueue(bot) {
-  var T = bot.T,
+Bot.prototype.tweetFromQueue = function() {
+  var bot = this,
+      T = bot.T,
       queuedTweet = bot.tweetQueue.shift();
 
   if (typeof queuedTweet === 'undefined') {
@@ -357,11 +360,12 @@ function tweetFromQueue(bot) {
     }
     console.log(queuedTweet.status);
   }
-}
+};
 
 //Main function for bots of type 'lyrpictweet'
-function makeLyrpicTweet(bot) {
-  var T = bot.T,
+Bot.prototype.makeLyrpicTweet = function() {
+  var bot = this,
+      T = bot.T,
       tweetContent = '',
       artistAndTitle = bot.getArtistTitlePair(),
       yql = makeYQL(makeChartLyricsURL(artistAndTitle));
@@ -408,7 +412,7 @@ function makeLyrpicTweet(bot) {
     } else {
       console.log('ERROR! No lyrics in GET response. (Timeout? Bad request?)');
       try {
-          makeLyrpicTweet(bot);
+          bot.makeLyrpicTweet();
         }
         catch (e) {
           console.log(e);
