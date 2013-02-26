@@ -91,7 +91,7 @@ var credentials = {
       flickr:               credentials.flickr_boodoo,
       tags:                 "cat%2C+-caterpillar",
       songs:                songSets.rap,
-      interval:             process.env['NODE_ENV'] == 'production' ? 60000*30 : 30000
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
     },
     
     countrydogs:
@@ -101,7 +101,7 @@ var credentials = {
       flickr:               credentials.flickr_boodoo,
       tags:                 "dog",
       songs:                songSets.country,
-      interval:             process.env['NODE_ENV'] == 'production' ? 60000*30 : 30000
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
     }
   };
 
