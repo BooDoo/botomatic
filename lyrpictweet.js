@@ -274,12 +274,14 @@ function findRhymes(fullLyric) {
   }
 }
 
-//Search 100 recent tweets for those was certain number of syllables
+//Search 100 recent tweets for those with certain number of syllables
 function syllableFilter(bot) {
 
     var T = bot.T,
         tweetQueue = bot.tweetQueue,
         queueMax = bot.queueMax,
+        prefix = bot.prefix || '',
+        suffix = bot.suffix || '',
         targetSyllables = bot.targetSyllables,
         searchParams  = { 
           "q": 'lang:en', 
@@ -300,43 +302,34 @@ function syllableFilter(bot) {
         word,
         tweetContent = '',
         wordSep       = /^\w|[^\w']+(?!\W*$)/g,
-        stripEntities = /^RT |[@#].+?[\S]+?\s|[@#][^@#]+$|http:\/\/[\S]+|[,\|\\\/\-\.]+|:\-?[dxpc3be]/gi; //remove RT prefix, mentions, hashtags, common emoticons
+        stripEntities = /^RT |[@#].+?[\S]+?\s|[@#][^@#]+$|http:\/\/[\S]+|[,\|\\\/\-\.]+|[:;]\-?[dxpc3be]|[o\^x]_+?[o\^x]/gi; //remove RT prefix, mentions, hashtags, common emoticons
 
     for (s = 0, ss = reply.statuses.length; s < ss; s++) {
       t = reply.statuses[s];
       text = t.text.replace(stripEntities, '').trim();
       sepCount = (text.match(wordSep) || []).length;
       
-      //Quick filter for tweets with more words than we want syllables.
-      if (sepCount >= targetSyllables || sepCount < 1) {
-        //console.log(('REJECTED: ').red);
-        //console.log((text).grey);
-        continue;               
-      }
+      //Quick filter for tweets with more words than we want syllables, or too long to tweet.
+      if ( (text.length + prefix.length + suffix.length) <= 140 && sepCount > 0 && sepCount <= targetSyllables) {
+        //console.log(('SEEMS LEGIT: ').green)
+        //console.log((text).grey)
+        tArr = text.replace('-',' ').split(' ');
 
-      //console.log(('SEEMS LEGIT: ').green)
-      //console.log((text).grey)
-      tArr = text.replace('-',' ').split(' ');
+        for (w = 0, ww= tArr.length, sCount = 0; w < ww && sCount < targetSyllables; w++) {
+          word = tArr[w].replace(/^\W+|\W+$/g,'').trim();
+          if (word !== '') {
+            sCount += (new Word(word).countSyllables() || 1000); //intentionally overrun syllable target if no pronunciation found
+            if (word === 'our' || word === 'hour') {sCount -= 1;} //adjust down syllable count where we disagree with CMUDict
+            //console.log('+ ' + word + '= ' + sCount);
+          }
+        }
 
-      for (w = 0, ww= tArr.length, sCount = 0; w < ww; w++) {
-        if (sCount > targetSyllables) {
-          continue;
+        if (sCount === targetSyllables) {
+          //console.log(('We got one! : ').green);
+          //console.log(text);
+          tweetContent = prefix + text + suffix;
+          tweetQueue.push({status: tweetContent, in_reply_to_status_id: t.id});
         }
-        
-        word = tArr[w].replace(/^\W+|\W+$/g,'').trim();
-        if (word === '') {
-          continue;
-        }
-        
-        sCount += (new Word(word).countSyllables() || 1000); //intentionally overrun syllable target is no pronunciation found
-        if (word === 'our' || word === 'hour') sCount--; //adjust down syllable count where we disagree with CMUDict
-        //console.log('+ ' + word + '= ' + sCount);
-      }
-      if (sCount === targetSyllables) {
-        //console.log(('We got one! : ').green);
-        //console.log(text);
-        tweetContent = (bot.prefix || '') + text + (bot.suffix || '');
-        tweetQueue.push({status: tweetContent, in_reply_to_status_id: t.id});
       }
     }
     
