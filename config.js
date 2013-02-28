@@ -26,9 +26,18 @@ var credentials = {
     {
       service:              "twitter",
       consumer_key:         process.env['CTR_TWITTER_CONSUMER_KEY'],
-      consumer_secret:       process.env['CTR_TWITTER_CONSUMER_SECRET'],
+      consumer_secret:      process.env['CTR_TWITTER_CONSUMER_SECRET'],
       access_token:         process.env['CTR_TWITTER_ACCESS_TOKEN'],
       access_token_secret:  process.env['CTR_TWITTER_ACCESS_TOKEN_SECRET']
+    },
+
+    twitter_latour:
+    {
+      service:              "twitter",
+      consumer_key:         process.env['DOG_TWITTER_CONSUMER_KEY'],
+      consumer_secret:      process.env['DOG_TWITTER_CONSUMER_SECRET'],
+      access_token:         process.env['DOG_TWITTER_ACCESS_TOKEN'],
+      access_token_secret:  process.env['DOG_TWITTER_ACCESS_TOKEN_SECRET']
     },
 
     flickr_boodoo:
@@ -124,7 +133,18 @@ var credentials = {
       suffix:               ' / doo-dah, doo-dah…',
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*10 : 30000,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000
-    }
+    },
+    
+    latourswag:
+    {
+      type:                 "tweetmash",
+      handle:               "latourswag",
+      twitter:              credentials.twitter_latour,
+      criteria:             ["#swag and", "from:latourbot"],
+      pivot:                " and ",
+      //searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*10 : 30000,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000
+    }    
   };
 
 module.exports.credentials = credentials;

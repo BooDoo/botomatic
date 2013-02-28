@@ -18,6 +18,7 @@ var restclient  = require('node-restclient'),
     Twit        = require('twit'),
     express     = require('express'),
     app         = express(),
+    ent         = require('ent'),
     CMUDict     = require('cmudict').CMUDict,
     cmudict     = new CMUDict(),
     cmuNotFound = [];
@@ -74,7 +75,8 @@ function Word (literal) {
   if (typeof this.phonemes === 'undefined') {
     this.phonemes = null; //Not found in CMUDict!
     cmuNotFound.push(literal); //Add to list of unknown words
-  } else {
+  }
+  else {
     this.phonemes = this.phonemes.trim().split(' ');  
 
     //Strip leading consonants only for a strict rhyme
@@ -101,7 +103,8 @@ Word.prototype.countSyllables = function() {
   if (word.phonemes === null) {
     //Add a fallback to Wordnik API here?
     word.syllableCount = null;
-  } else {
+  } 
+  else {
     for (p = 0, pp = word.phonemes.length, word.syllableCount = 0; p < pp; p++) {
       first = word.phonemes[p].charAt(0);
       if  (first == 'A' ||
@@ -145,13 +148,28 @@ function Bot (botConfig) {
     
     this.intervalId = setInterval(this.makeLyrpicTweet, this.interval, this);
     
-  } else if (this.type === 'syllablecount') {    
+  }
+  else if (this.type === 'syllablecount') {    
     if (typeof this.queueMax === 'undefined') {
         this.queueMax = 300; //Arbitrary limit on queue size if none given
     }
     this.tweetQueue = [];
     this.searchIntervalId = setInterval(this.syllableFilter, this.searchInterval, this);
     this.intervalId = setInterval(this.tweetFromQueue, this.interval, this);
+  }
+  else if (this.type === 'tweetmash') {
+      this.firstCriterion = "http://search.twitter.com/search.json?callback=?&rpp=100&q='" + ent.encode(this.criteria[0]) + "'&result_type=recent";
+      this.secondCriterion = "http://search.twitter.com/search.json?callback=?&rpp=100&q='" + ent.encode(this.criteria[1])  + "'&result_type=recent";
+      this.firsts = [];
+      this.seconds = [];
+      this.shortSeconds = [];
+      this.pre = "";
+      this.post = "";
+      this.tweetContent = "";
+      //this.tweetQueue = [];
+      //this.searchIntervalId = setInterval(this.makeTweetMash, this.searchInterval, this);
+      //this.IntervalId = setInterval(this.tweetFromQueue, this.interval, this);
+      this.intervalId = setInterval(this.makeTweetMash, this.interval, this);
   }
 
   Bot.bots[this.handle] = this;
@@ -183,6 +201,146 @@ Bot.prototype.getFlickrURL = function (pageCount) {
                     "nojsoncallback=1";
   
   return flickrURL;
+};
+
+Bot.prototype.secondFilter = function secondFilter (data) {
+  data = JSON.parse(data);
+  var bot = this,
+      T = bot.T,
+      pivot = bot.pivot,
+      firsts = bot.firsts,
+      results = data.results,
+      pre = bot.pre,
+      post = bot.post,
+      tweetContent = bot.tweetContent,
+      seconds = bot.seconds,
+      shortSeconds = bot.shortSeconds,
+      
+      i, ii,
+      text,
+      secondfirst = true;
+
+  // for each latour tweet, find the ones with ' and ' or a comma, and then only if the and or the comma
+  // appear somewhat in the middle (30-90 characters). push those to the latours array.
+  // OR if the whole latour tweet is less than 50 chars, we can prepend 'and' to it and push it to latoursShort
+  for (i = 0, ii = results.length; i < ii; i++) {
+    text = results[i].text;
+    //console.log(text);
+
+    if (text.indexOf(pivot) !== -1) { // || text.indexOf(', ') !== -1) {
+      if ((text.indexOf(pivot) < 90 && text.indexOf(pivot) > 30)) { // || (text.indexOf(', ') < 90 && text.indexOf(', ') > 30)) {
+        seconds.push(text);
+      }
+    }
+    else if (text.length < 50) {
+      //console.log(text);
+      shortSeconds.push(pivot + text.toLowerCase());
+    }
+  }
+
+  // OKAY now we have 'swags', an array containing a subset of swag tweets with 'and' in them,
+  // and 'latours', an array containing a subset of @latourbot tweets with 'and' or ','
+
+  console.log(seconds.length);
+
+
+  // now we randomize whether tweet takes the form "@latourbot and #swag" or "#swag and @latourbot"
+  text = "";
+  if (Math.random() < 0.5) {
+    secondfirst = false;
+  }
+
+  // here we either pick a random latour or a random swag to start the tweet with
+  if (secondfirst) {
+    text = seconds[Math.floor(Math.random() * seconds.length)];
+  }
+  else {
+    text = firsts[Math.floor(Math.random() * firsts.length)];
+  }
+
+  // by definition this will either have 'and' or a comma, so we grab all the text up to but not including
+  // the conjunction. 'and' takes precedence because it allows for more natural sounding results
+  // we call it 'pre' because it's the prefix
+
+  if (text.indexOf(pivot) !== -1) {
+    pre = text.substr(0, text.indexOf(pivot));
+  }
+  
+  //else if (text.indexOf(', ') !== -1) {
+  //  pre = text.substr(0, text.indexOf(', '));
+  //}
+
+  // now we pick a random latour or a random swag for end of our tweet
+
+  if (secondfirst) {
+    text = firsts[Math.floor(Math.random() * firsts.length)];
+  }
+  else {
+    // this is just adding on those < 50 char latour quips since it only matters in the postfix context, not the prefix
+    seconds = seconds.concat(shortSeconds);
+    text = seconds[Math.floor(Math.random() * seconds.length)];
+  }
+
+  // this time we extract the second half of the source tweet and put it in 'post'
+  if (text.indexOf(pivot) !== -1) {
+    post = text.substr(text.indexOf(pivot) + 5, 140);
+  }
+  //else if (text.indexOf(', ') !== -1) {
+  //  post = text.substr(text.indexOf(', ') + 2, 140);
+  //}
+
+  // our tweet is joined on an " and " -- every @latourswag tweet has the word "and" in it!
+  tweetContent = pre + " and " + post;
+  // strip out URLs and usernames
+  tweetContent = tweetContent.replace(/(https?:\/\/[^\s]+)/g, '');
+  tweetContent = tweetContent.replace(/@[a-zA-Z0-9_]+/g, '');
+  // decode any escaped characters so that '&lt;' will show as '<', etc
+  tweetContent = ent.decode(tweetContent);
+  // truncate to 140 chars so twitter doesn't reject it (most tweets are < 140 but some aren't)
+  tweetContent = tweetContent.substr(0, 140);
+  console.log(tweetContent);
+  //console.log(tweetContent.length);
+
+  // tweet it!    
+
+  if (process.env['NODE_ENV'] === 'production') {
+    T.post('statuses/update', {
+      status: tweetContent
+    }, function (err, reply) {});
+  }
+};
+
+
+Bot.prototype.firstFilter = function firstFilter (data) {
+    // parse them from JSON into a javascript object called 'data'
+    data = JSON.parse(data);
+    // jettison the metadata, we just care about the results of the search
+    var bot = this,
+        results = data.results,
+        firsts = bot.firsts,
+        pivot = bot.pivot,
+        secondCriterion = bot.secondCriterion,
+        i, ii,
+        text;
+
+    // look at each result and push it to an array called 'swags' if it is not an RT and ' and ' appears
+    // more than 20 characters into the tweet
+    for (i = 0, ii = results.length; i < ii; i++) {
+      text = results[i].text;
+      if (text.indexOf(pivot) !== -1 && text.indexOf('RT') == -1 && text.indexOf(pivot) > 20) {
+        firsts.push(text);
+      }
+    }
+    console.log(firsts.length);
+    // get the latour tweets
+    restclient.get(secondCriterion, bot.secondFilter);
+};
+
+Bot.prototype.makeTweetMash = function makeTweetMash() {
+  var bot = this;
+  
+  // get the swag tweets, then the latour tweets, then mash together. 
+  restclient.get(bot.firstCriterion, bot.firstFilter), 
 };
 
 Bot.bots = {};    //Holder for Bot objects
@@ -246,7 +404,8 @@ function findRhymes(fullLyric) {
       if (wordsToRhyme.length === 0) {                                                      //If first line in a new tweetable cluster:
         tweetLyric = line;                                                                       //|-set this line as the root for a new potential tweet
         wordsToRhyme = [lastWord];                                                          //|-seed grouping of words to check for rhyme with last word
-      } else {                                                                              //Otherwise...
+      } 
+      else {                                                                              //Otherwise...
         if (tweetLyric.length + line.length + 3 <= 117) {                                        //|-If existing + this + link will fit in a tweet:
             tweetLyric += ' / ' + line;                                                          //|-Add this line to the potential tweet body
 
@@ -255,10 +414,12 @@ function findRhymes(fullLyric) {
               (wordsToRhyme.length > 1 && isRhymeInArray(wordsToRhyme)) ? theRhymes.push(tweetLyric) : nonRhymes.push(tweetLyric);
               tweetLyric = line;                                                                 //|-----set this line as the root for a new potential tweet
               wordsToRhyme = [lastWord];                                                    //|-----seed grouping of words to check for rhyme with last word
-            } else {                                                                        //|---Otherwise...
+            } 
+            else {                                                                        //|---Otherwise...
               wordsToRhyme.push(lastWord);                                                  //|-----Add last word to rhyme pool and move on
             }
-        } else {                                                                            //|-If existing + this + link will be too long to tweet
+        } 
+        else {                                                                            //|-If existing + this + link will be too long to tweet
           (wordsToRhyme.length > 1 && isRhymeInArray(wordsToRhyme)) ? theRhymes.push(tweetLyric) : nonRhymes.push(tweetLyric);
           tweetLyric = line;                                                                     //|--set this line as the root for a new potential tweet
           wordsToRhyme = [lastWord];                                                        //|--seed grouping of words to check for rhyme with last word
@@ -270,7 +431,8 @@ function findRhymes(fullLyric) {
   //Return array of chunks with tweetLyrics, or all the chunks found if none have known tweetLyrics.
   if (theRhymes.length > 0) {
     return theRhymes;
-  } else {
+  } 
+  else {
     return nonRhymes;
   }
 }
@@ -350,7 +512,8 @@ Bot.prototype.tweetFromQueue = function() {
 
   if (typeof queuedTweet === 'undefined') {
       return;
-  } else {
+  }
+  else {
     if (process.env['NODE_ENV'] === 'production') {
       T.post('statuses/update', queuedTweet, function(err, reply) {
         if (err) {
@@ -409,7 +572,8 @@ Bot.prototype.makeLyrpicTweet = function() {
             });
         }
       }, "json");
-    } else {
+    }
+    else {
       console.log('ERROR! No lyrics in GET response. (Timeout? Bad request?)');
       try {
           bot.makeLyrpicTweet();
