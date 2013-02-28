@@ -158,8 +158,8 @@ function Bot (botConfig) {
     this.intervalId = setInterval(this.tweetFromQueue, this.interval, this);
   }
   else if (this.type === 'tweetmash') {
-      this.firstCriterion = "http://search.twitter.com/search.json?callback=?&rpp=100&q='" + ent.encode(this.criteria[0]) + "'&result_type=recent";
-      this.secondCriterion = "http://search.twitter.com/search.json?callback=?&rpp=100&q='" + ent.encode(this.criteria[1])  + "'&result_type=recent";
+      this.firstCriterion = "http://search.twitter.com/search.json?callback=?&rpp=100&q='" + encodeURIComponent(this.criteria[0]) + "'&result_type=recent";
+      this.secondCriterion = "http://search.twitter.com/search.json?callback=?&rpp=100&q='" + encodeURIComponent(this.criteria[1])  + "'&result_type=recent";
       this.firsts = [];
       this.seconds = [];
       this.shortSeconds = [];
@@ -205,6 +205,10 @@ Bot.prototype.getFlickrURL = function (pageCount) {
 
 Bot.prototype.secondFilter = function secondFilter (data) {
   data = JSON.parse(data);
+  if (!(this instanceof Bot)) {
+    throw(new Error('this is not a Bot within secondFilter()!'));
+  }
+
   var bot = this,
       T = bot.T,
       pivot = bot.pivot,
@@ -312,35 +316,47 @@ Bot.prototype.secondFilter = function secondFilter (data) {
 
 
 Bot.prototype.firstFilter = function firstFilter (data) {
-    // parse them from JSON into a javascript object called 'data'
-    data = JSON.parse(data);
-    // jettison the metadata, we just care about the results of the search
-    var bot = this,
-        results = data.results,
-        firsts = bot.firsts,
-        pivot = bot.pivot,
-        secondCriterion = bot.secondCriterion,
-        i, ii,
-        text;
+  // parse them from JSON into a javascript object called 'data'
+  data = JSON.parse(data);
 
-    // look at each result and push it to an array called 'swags' if it is not an RT and ' and ' appears
-    // more than 20 characters into the tweet
-    for (i = 0, ii = results.length; i < ii; i++) {
-      text = results[i].text;
-      if (text.indexOf(pivot) !== -1 && text.indexOf('RT') == -1 && text.indexOf(pivot) > 20) {
-        firsts.push(text);
-      }
+  if (!(this instanceof Bot)) {
+    throw(new Error('this is not a Bot within firstFilter()!'));
+  }
+  var bot = this,
+      results = data.results,
+      firsts = bot.firsts,
+      pivot = bot.pivot,
+      secondCriterion = bot.secondCriterion,
+      i, ii,
+      text;
+
+  // look at each result and push it to an array called 'swags' if it is not an RT and ' and ' appears
+  // more than 20 characters into the tweet
+  for (i = 0, ii = results.length; i < ii; i++) {
+    text = results[i].text;
+    if (text.indexOf(pivot) !== -1 && text.indexOf('RT') == -1 && text.indexOf(pivot) > 20) {
+      firsts.push(text);
     }
-    console.log(firsts.length);
-    // get the latour tweets
-    restclient.get(secondCriterion, bot.secondFilter);
+  }
+  console.log(firsts.length);
+  // get the latour tweets
+  restclient.get(secondCriterion, function(data) {
+    bot.secondFilter.call(bot, data);
+  });
 };
 
-Bot.prototype.makeTweetMash = function makeTweetMash() {
-  var bot = this;
+Bot.prototype.makeTweetMash = function makeTweetMash(bot) {
+  if (typeof bot === 'undefined') {
+    bot = this;
+  }
+  if (!(bot instanceof Bot)) {
+    throw(new Error('this is not a Bot within makeTweetMash()!'));
+  }
   
   // get the swag tweets, then the latour tweets, then mash together. 
-  restclient.get(bot.firstCriterion, bot.firstFilter), 
+  restclient.get(bot.firstCriterion, function(data) {
+    bot.firstFilter.call(bot, data);
+  });
 };
 
 Bot.bots = {};    //Holder for Bot objects
@@ -583,7 +599,7 @@ Bot.prototype.makeLyrpicTweet = function() {
         }
     }
   }, "json");
-}
+};
 
 //Immediate function to construct bots and make setInterval calls:
 (function (botConfigs) {
