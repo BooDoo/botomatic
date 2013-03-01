@@ -27,7 +27,7 @@ var restclient  = require('node-restclient'),
 app.get('/', function(req, res){
     res.send('IGNORE ME.');
 });
-app.listen(3000);
+app.listen(process.env.PORT || 3000);
 
 //The cmudict module takes ~2sec on initial query; let's get that out of the way now.
 cmudict.get('initialize');
@@ -46,6 +46,17 @@ function randomFromArray(arr) {
   }
 
   else {return null;}
+}
+
+function setArgDefault(arg, defaultValue, type) {
+  if (typeof arg === 'undefined') { 
+   arg = defaultValue;
+  }
+  if (typeof type !== undefined && !(arg instanceof type)) {
+    throw(new Error('arg is not required type within ' + arguments.callee.caller.name + '(' + typeof arg + '!==' + type.name + ')'));
+  }
+
+  return arg;  
 }
 
 //Form the request URL for retrieving ChartLyrics API data
@@ -180,12 +191,7 @@ function Bot (botConfig) {
 }
 
 Bot.prototype.tweetQueueFromArray = function(bot) {
-  if (typeof bot === 'undefined') {
-    bot = this;
-  }
-  if (!(bot instanceof Bot)) {
-    throw(new Error('bot is not a Bot within tweetQueueFromArray()!'));
-  }
+  bot = setArgDefault(bot, this, Bot);
 
   var tweetQueue = [],
       prefix = bot.prefix || '',
@@ -200,12 +206,7 @@ Bot.prototype.tweetQueueFromArray = function(bot) {
 };
 
 Bot.prototype.getArtistTitlePair = function(bot) {
-  if (typeof bot === 'undefined') {
-    bot = this;
-  }
-  if (!(bot instanceof Bot)) {
-    throw(new Error('bot is not a Bot within getArtistTitlePair()!'));
-  }
+  bot = setArgDefault(bot, this, Bot);
 
   var artist = randomFromArray(bot.artists),
       title = randomFromArray(bot.songs[artist]);
@@ -215,16 +216,8 @@ Bot.prototype.getArtistTitlePair = function(bot) {
 // Retrieve page somewhere 1-41 from Flickr photos with particular tags and
 // CC or more liberal license, sorted by relevance:
 Bot.prototype.getFlickrURL = function (bot, pageCount) {
-  if (typeof bot === 'undefined') {
-    bot = this;
-  }
-  if (!(bot instanceof Bot)) {
-    throw(new Error('bot is not a Bot within getFlickrURL()!'));
-  }
-  
-  if (typeof pageCount === 'undefined') {
-    pageCount = 41;
-  }
+  bot = setArgDefault(bot, this, Bot);
+  pageCount = setArgDefault(pageCount, 41);
   
   var tags       =  bot.tags,
       flickr_key =  bot.flickr.flickr_key,
@@ -244,13 +237,8 @@ Bot.prototype.getFlickrURL = function (bot, pageCount) {
 };
 
 Bot.prototype.secondFilter = function secondFilter (data, bot) {
+  bot = setArgDefault(bot, this, Bot);
   data = JSON.parse(data);
-  if (typeof bot === 'undefined') {
-    bot = this;
-  }
-  if (!(bot instanceof Bot)) {
-    throw(new Error('bot is not a Bot within secondFilter()!'));
-  }
 
   var T = bot.T,
       pivot = bot.pivot,
@@ -358,14 +346,9 @@ Bot.prototype.secondFilter = function secondFilter (data, bot) {
 
 
 Bot.prototype.firstFilter = function firstFilter (data, bot) {
-  // parse them from JSON into a javascript object called 'data'
+  bot = setArgDefault(bot, this, Bot);
   data = JSON.parse(data);
-  if (typeof bot === 'undefined') {
-    bot = this;
-  }
-  if (!(bot instanceof Bot)) {
-    throw(new Error('this is not a Bot within firstFilter()!'));
-  }
+  
   var results = data.results,
       firsts = bot.firsts,
       pivot = bot.pivot,
@@ -389,12 +372,7 @@ Bot.prototype.firstFilter = function firstFilter (data, bot) {
 };
 
 Bot.prototype.makeTweetMash = function makeTweetMash(bot) {
-  if (typeof bot === 'undefined') {
-    bot = this;
-  }
-  if (!(bot instanceof Bot)) {
-    throw(new Error('this is not a Bot within makeTweetMash()!'));
-  }
+  bot = setArgDefault(bot, this, Bot);
   
   // get the swag tweets, then the latour tweets, then mash together. 
   restclient.get(bot.firstCriterion, function(data) {
@@ -498,24 +476,19 @@ function findRhymes(fullLyric) {
 
 //Search 100 recent tweets for those with certain number of syllables
 Bot.prototype.syllableFilter = function(bot) {
-  if (typeof bot === 'undefined') {
-    bot = this;
-  }
-  if (!(bot instanceof Bot)) {
-    throw(new Error('this is not a Bot within syllableFilter()!'));
-  }
+  bot = setArgDefault(bot, this, Bot);
 
-    var T = bot.T,
-        tweetQueue = bot.tweetQueue,
-        queueMax = bot.queueMax,
-        prefix = bot.prefix || '',
-        suffix = bot.suffix || '',
-        targetSyllables = bot.targetSyllables,
-        searchParams  = { 
-          "q": 'lang:en', 
-          "result-type": 'recent', 
-          "count": 100, 
-        };
+  var T = bot.T,
+      tweetQueue = bot.tweetQueue,
+      queueMax = bot.queueMax,
+      prefix = bot.prefix || '',
+      suffix = bot.suffix || '',
+      targetSyllables = bot.targetSyllables,
+      searchParams  = { 
+        "q": 'lang:en', 
+        "result-type": 'recent', 
+        "count": 100, 
+      };
 
   T.get('search/tweets', searchParams, function(err, reply) {
     if (err) {console.log(err);}
@@ -572,12 +545,7 @@ Bot.prototype.syllableFilter = function(bot) {
 
 //Send Tweet from Bot's prepared array
 Bot.prototype.tweetFromQueue = function(bot, isRandom) {
-  if (typeof bot === 'undefined' && this instanceof Bot) {
-    bot = this;
-  }
-  if (!(bot instanceof Bot)) {
-    throw(new Error('this is not a Bot within tweetFromQueue()!'));
-  }
+  bot = setArgDefault(bot, this, Bot);
   
   var T = bot.T,
       tweetQueue = bot.tweetQueue,
@@ -608,12 +576,7 @@ Bot.prototype.tweetFromQueue = function(bot, isRandom) {
 
 //Main function for bots of type 'lyrpictweet'
 Bot.prototype.makeLyrpicTweet = function(bot) {
-  if (typeof bot === 'undefined' && this instanceof Bot) {
-    bot = this;
-  }
-  if (!(bot instanceof Bot)) {
-    throw(new Error('this is not a Bot within makeLyrpicTweet()!'));
-  }
+  bot = setArgDefault(bot, this, Bot);
 
   var T = bot.T,
       tweetContent = '',
