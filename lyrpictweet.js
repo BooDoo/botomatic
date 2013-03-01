@@ -172,7 +172,7 @@ function Bot (botConfig) {
       this.intervalId = setInterval(this.makeTweetMash, this.interval, this);
   }
   else if (this.type === 'reminder') {
-    this.tweetQueue = this.tweetQueueFromArray(this.contentPool);
+    this.tweetQueue = this.tweetQueueFromArray(this);
     this.intervalId = setInterval(this.tweetFromQueue, this.interval, this, this.isRandom);
   }
 
@@ -181,12 +181,12 @@ function Bot (botConfig) {
 
 Bot.prototype.tweetQueueFromArray = function(bot) {
   var tweetQueue = [],
-      prefix = bot.prefix,
-      suffix = bot.suffix,
+      prefix = bot.prefix || '',
+      suffix = bot.suffix || '',
       contentPool = bot.contentPool;
       
   contentPool.forEach(function (t) {
-    tweetQueue.push( {status: prefix || '' + t + suffix || ''});
+    tweetQueue.push( {status: prefix + t + suffix});
   });
   
   return tweetQueue;
@@ -471,10 +471,15 @@ function findRhymes(fullLyric) {
 }
 
 //Search 100 recent tweets for those with certain number of syllables
-Bot.prototype.syllableFilter = function() {
+Bot.prototype.syllableFilter = function(bot) {
+  if (typeof bot === 'undefined') {
+    bot = this;
+  }
+  if (!(bot instanceof Bot)) {
+    throw(new Error('this is not a Bot within syllableFilter()!'));
+  }
 
-    var bot = this,
-        T = bot.T,
+    var T = bot.T,
         tweetQueue = bot.tweetQueue,
         queueMax = bot.queueMax,
         prefix = bot.prefix || '',
@@ -512,18 +517,20 @@ Bot.prototype.syllableFilter = function() {
         //console.log((text).grey)
         tArr = text.replace('-',' ').split(' ');
 
-        for (w = 0, ww= tArr.length, sCount = 0; w < ww && sCount < targetSyllables; w++) {
+        for (w = 0, ww= tArr.length, sCount = 0; w < ww; w++) {
           word = tArr[w].replace(/^\W+|\W+$/g,'').trim();
           if (word !== '') {
             sCount += (new Word(word).countSyllables() || 1000); //intentionally overrun syllable target if no pronunciation found
             if (word === 'our' || word === 'hour') {sCount -= 1;} //adjust down syllable count where we disagree with CMUDict
             //console.log('+ ' + word + '= ' + sCount);
+            if (sCount > targetSyllables) {
+              break;
+            }
           }
         }
 
         if (sCount === targetSyllables) {
-          //console.log(('We got one! : ').green);
-          //console.log(text);
+          //console.log('We got one! : ', text);
           tweetContent = prefix + text + suffix;
           tweetQueue.push({status: tweetContent, in_reply_to_status_id: t.id});
         }
@@ -574,9 +581,15 @@ Bot.prototype.tweetFromQueue = function(bot, isRandom) {
 };
 
 //Main function for bots of type 'lyrpictweet'
-Bot.prototype.makeLyrpicTweet = function() {
-  var bot = this,
-      T = bot.T,
+Bot.prototype.makeLyrpicTweet = function(bot) {
+  if (typeof bot === 'undefined' && this instanceof Bot) {
+    bot = this;
+  }
+  if (!(bot instanceof Bot)) {
+    throw(new Error('this is not a Bot within makeLyrpicTweet()!'));
+  }
+
+  var T = bot.T,
       tweetContent = '',
       artistAndTitle = bot.getArtistTitlePair(),
       yql = makeYQL(makeChartLyricsURL(artistAndTitle));
