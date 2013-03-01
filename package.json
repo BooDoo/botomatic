@@ -25,7 +25,8 @@
     "express": "3.0.x",
     "twit": "1.0.x",
     "node-restclient": "0.0.x",
-    "cmudict": "1.0.x"
+    "cmudict": "1.0.x",
+    "ent": "0.0.x"
   },
   "engines": {
     "node": "0.8.x",

@@ -18,6 +18,7 @@ var restclient  = require('node-restclient'),
     Twit        = require('twit'),
     express     = require('express'),
     app         = express(),
+    ent         = require('ent'),
     CMUDict     = require('cmudict').CMUDict,
     cmudict     = new CMUDict(),
     cmuNotFound = [];
@@ -60,6 +61,67 @@ function makeYQL(url) {
     return lyricYQL;
 }
 
+//Constructor for an object to hold a word and its phonemes from CMUDict
+function Word (literal) {
+  if (!(this instanceof Word)) {
+    return new Word(literal);
+  }
+
+  var i, ii;
+
+  this.literal = literal;
+  this.phonemes = cmudict.get(literal);
+
+  if (typeof this.phonemes === 'undefined') {
+    this.phonemes = null; //Not found in CMUDict!
+    cmuNotFound.push(literal); //Add to list of unknown words
+  }
+  else {
+    this.phonemes = this.phonemes.trim().split(' ');  
+
+    //Strip leading consonants only for a strict rhyme
+    for (i = 0, ii = this.phonemes.length; i < ii && this.phonemes[i].match(/^[^AEIOU]/i); i++);
+    this.rhymeStrict = this.phonemes.slice(i);
+
+    //Phonemes for last vowel sound through end of word for a greedy rhyme
+    for (i = this.phonemes.length - 1; i > 0 && this.phonemes[i].match(/^[AEIOU]/i); i--);
+    this.rhymeGreedy = this.phonemes.slice(--i);
+  }
+
+  Word.words[this.literal] = this;
+}
+
+Word.prototype.toString = function() {
+  return this.literal;
+};
+
+Word.prototype.countSyllables = function() {
+  var word = this,
+      p, pp,
+      first;
+
+  if (word.phonemes === null) {
+    //Add a fallback to Wordnik API here?
+    word.syllableCount = null;
+  } 
+  else {
+    for (p = 0, pp = word.phonemes.length, word.syllableCount = 0; p < pp; p++) {
+      first = word.phonemes[p].charAt(0);
+      if  (first == 'A' ||
+           first == 'E' ||
+           first == 'I' ||
+           first == 'O' ||
+           first == 'U') {
+        word.syllableCount++;
+      }
+    }
+  }
+
+  return word.syllableCount;
+};
+
+Word.words = {};    //Holder for caching Word objects
+
 //Send in the bots
 function Bot (botConfig) {
   if (!(this instanceof Bot)) {
@@ -72,18 +134,62 @@ function Bot (botConfig) {
     this[p] = botConfig[p];
   }
 
-  if (typeof this.artists === 'undefined') {
-    this.artists = [];
-    for (key in this.songs) {
-      this.artists.push(key);
+  this.T = new Twit(this.twitter);
+  
+  //Specialized setup by type (TODO: move to Child constructors)
+  if (this.type === 'lyrpictweet') {
+      
+    if (typeof this.artists === 'undefined') {
+      this.artists = [];
+      for (key in this.songs) {
+        this.artists.push(key);
+      }
     }
+    
+    this.intervalId = setInterval(this.makeLyrpicTweet, this.interval, this);
+    
+  }
+  else if (this.type === 'syllablecount') {    
+    if (typeof this.queueMax === 'undefined') {
+        this.queueMax = 300; //Arbitrary limit on queue size if none given
+    }
+    this.tweetQueue = [];
+    this.searchIntervalId = setInterval(this.syllableFilter, this.searchInterval, this);
+    this.intervalId = setInterval(this.tweetFromQueue, this.interval, this);
+  }
+  else if (this.type === 'tweetmash') {
+      this.firstCriterion = "http://search.twitter.com/search.json?callback=?&rpp=100&q='" + encodeURIComponent(this.criteria[0]) + "'&result_type=recent";
+      this.secondCriterion = "http://search.twitter.com/search.json?callback=?&rpp=100&q='" + encodeURIComponent(this.criteria[1])  + "'&result_type=recent";
+      this.firsts = [];
+      this.seconds = [];
+      this.shortSeconds = [];
+      this.pre = "";
+      this.post = "";
+      this.tweetContent = "";
+      //this.tweetQueue = [];
+      //this.searchIntervalId = setInterval(this.makeTweetMash, this.searchInterval, this);
+      //this.IntervalId = setInterval(this.tweetFromQueue, this.interval, this);
+      this.intervalId = setInterval(this.makeTweetMash, this.interval, this);
+  }
+  else if (this.type === 'reminder') {
+    this.tweetQueue = this.tweetQueueFromArray(this);
+    this.intervalId = setInterval(this.tweetFromQueue, this.interval, this, this.isRandom);
   }
 
-  console.log(JSON.stringify(this.tags));
-  this.T = new Twit(this.twitter);
-  this.intervalId = setInterval(makeLyrpicTweet, this.interval, this);
-
   Bot.bots[this.handle] = this;
+}
+
+Bot.prototype.tweetQueueFromArray = function(bot) {
+  var tweetQueue = [],
+      prefix = bot.prefix || '',
+      suffix = bot.suffix || '',
+      contentPool = bot.contentPool;
+      
+  contentPool.forEach(function (t) {
+    tweetQueue.push( {status: prefix + t + suffix});
+  });
+  
+  return tweetQueue;
 }
 
 Bot.prototype.getArtistTitlePair = function() {
@@ -94,7 +200,7 @@ Bot.prototype.getArtistTitlePair = function() {
 
 // Retrieve page somewhere 1-41 from Flickr photos with particular tags and
 // CC or more liberal license, sorted by relevance:
-Bot.prototype.getFlickrURL = function (pagecount) {
+Bot.prototype.getFlickrURL = function (pageCount) {
   if (typeof pageCount === 'undefined') {
     pageCount = 41;
   }
@@ -114,42 +220,163 @@ Bot.prototype.getFlickrURL = function (pagecount) {
   return flickrURL;
 };
 
-Bot.bots = {};    //Holder for Bot objects
-
-//Constructor for an object to hold a word and its phonemes from CMUDict
-function Word (literal) {
-  if (!(this instanceof Word)) {
-    return new Word(literal);
+Bot.prototype.secondFilter = function secondFilter (data) {
+  data = JSON.parse(data);
+  if (!(this instanceof Bot)) {
+    throw(new Error('this is not a Bot within secondFilter()!'));
   }
 
-  var i, ii;
+  var bot = this,
+      T = bot.T,
+      pivot = bot.pivot,
+      firsts = bot.firsts,
+      results = data.results,
+      pre = bot.pre,
+      post = bot.post,
+      tweetContent = bot.tweetContent,
+      seconds = bot.seconds,
+      shortSeconds = bot.shortSeconds,
+      
+      i, ii,
+      text,
+      secondfirst = true;
 
-  this.literal = literal;
-  this.phonemes = cmudict.get(literal);
+  // for each latour tweet, find the ones with ' and ' or a comma, and then only if the and or the comma
+  // appear somewhat in the middle (30-90 characters). push those to the latours array.
+  // OR if the whole latour tweet is less than 50 chars, we can prepend 'and' to it and push it to latoursShort
+  for (i = 0, ii = results.length; i < ii; i++) {
+    text = results[i].text;
+    //console.log(text);
 
-  if (typeof this.phonemes === 'undefined') {
-    this.phonemes = null; //Not found in CMUDict!
-    cmuNotFound.push(literal); //Add to list of unknown words
-  } else {
-    this.phonemes = this.phonemes.trim().split(' ');  
-
-    //Strip leading consonants only for a strict rhyme
-    for (i = 0, ii = this.phonemes.length; i < ii && this.phonemes[i].match(/^[^AEIOU]/i); i++);
-    this.rhymeStrict = this.phonemes.slice(i);
-
-    //Phonemes for last vowel sound through end of word for a greedy rhyme
-    for (i = this.phonemes.length - 1; i > 0 && this.phonemes[i].match(/^[AEIOU]/i); i--);
-    this.rhymeGreedy = this.phonemes.slice(--i);
+    if (text.indexOf(pivot) !== -1) { // || text.indexOf(', ') !== -1) {
+      if ((text.indexOf(pivot) < 90 && text.indexOf(pivot) > 30)) { // || (text.indexOf(', ') < 90 && text.indexOf(', ') > 30)) {
+        seconds.push(text);
+      }
+    }
+    else if (text.length < 50) {
+      //console.log(text);
+      shortSeconds.push(pivot + text.toLowerCase());
+    }
   }
 
-  Word.words[this.literal] = this;
-}
+  // OKAY now we have 'swags', an array containing a subset of swag tweets with 'and' in them,
+  // and 'latours', an array containing a subset of @latourbot tweets with 'and' or ','
 
-Word.prototype.toString = function() {
-  return this.literal;
+  console.log(seconds.length);
+
+
+  // now we randomize whether tweet takes the form "@latourbot and #swag" or "#swag and @latourbot"
+  text = "";
+  if (Math.random() < 0.5) {
+    secondfirst = false;
+  }
+
+  // here we either pick a random latour or a random swag to start the tweet with
+  if (secondfirst) {
+    text = seconds[Math.floor(Math.random() * seconds.length)];
+  }
+  else {
+    text = firsts[Math.floor(Math.random() * firsts.length)];
+  }
+
+  // by definition this will either have 'and' or a comma, so we grab all the text up to but not including
+  // the conjunction. 'and' takes precedence because it allows for more natural sounding results
+  // we call it 'pre' because it's the prefix
+
+  if (text.indexOf(pivot) !== -1) {
+    pre = text.substr(0, text.indexOf(pivot));
+  }
+  
+  //else if (text.indexOf(', ') !== -1) {
+  //  pre = text.substr(0, text.indexOf(', '));
+  //}
+
+  // now we pick a random latour or a random swag for end of our tweet
+
+  if (secondfirst) {
+    text = firsts[Math.floor(Math.random() * firsts.length)];
+  }
+  else {
+    // this is just adding on those < 50 char latour quips since it only matters in the postfix context, not the prefix
+    seconds = seconds.concat(shortSeconds);
+    text = seconds[Math.floor(Math.random() * seconds.length)];
+  }
+
+  // this time we extract the second half of the source tweet and put it in 'post'
+  if (text.indexOf(pivot) !== -1) {
+    post = text.substr(text.indexOf(pivot) + 5, 140);
+  }
+  //else if (text.indexOf(', ') !== -1) {
+  //  post = text.substr(text.indexOf(', ') + 2, 140);
+  //}
+
+  // our tweet is joined on an " and " -- every @latourswag tweet has the word "and" in it!
+  tweetContent = pre + " and " + post;
+  // strip out URLs and usernames
+  tweetContent = tweetContent.replace(/(https?:\/\/[^\s]+)/g, '');
+  tweetContent = tweetContent.replace(/@[a-zA-Z0-9_]+/g, '');
+  // decode any escaped characters so that '&lt;' will show as '<', etc
+  tweetContent = ent.decode(tweetContent);
+  // truncate to 140 chars so twitter doesn't reject it (most tweets are < 140 but some aren't)
+  tweetContent = tweetContent.substr(0, 140);
+  console.log(tweetContent);
+  //console.log(tweetContent.length);
+
+  // tweet it!    
+
+  if (process.env['NODE_ENV'] === 'production') {
+    T.post('statuses/update', {
+      status: tweetContent
+    }, function (err, reply) {});
+  }
 };
 
-Word.words = {};    //Holder for caching Word objects
+
+Bot.prototype.firstFilter = function firstFilter (data) {
+  // parse them from JSON into a javascript object called 'data'
+  data = JSON.parse(data);
+
+  if (!(this instanceof Bot)) {
+    throw(new Error('this is not a Bot within firstFilter()!'));
+  }
+  var bot = this,
+      results = data.results,
+      firsts = bot.firsts,
+      pivot = bot.pivot,
+      secondCriterion = bot.secondCriterion,
+      i, ii,
+      text;
+
+  // look at each result and push it to an array called 'swags' if it is not an RT and ' and ' appears
+  // more than 20 characters into the tweet
+  for (i = 0, ii = results.length; i < ii; i++) {
+    text = results[i].text;
+    if (text.indexOf(pivot) !== -1 && text.indexOf('RT') == -1 && text.indexOf(pivot) > 20) {
+      firsts.push(text);
+    }
+  }
+  console.log(firsts.length);
+  // get the latour tweets
+  restclient.get(secondCriterion, function(data) {
+    bot.secondFilter.call(bot, data);
+  });
+};
+
+Bot.prototype.makeTweetMash = function makeTweetMash(bot) {
+  if (typeof bot === 'undefined') {
+    bot = this;
+  }
+  if (!(bot instanceof Bot)) {
+    throw(new Error('this is not a Bot within makeTweetMash()!'));
+  }
+  
+  // get the swag tweets, then the latour tweets, then mash together. 
+  restclient.get(bot.firstCriterion, function(data) {
+    bot.firstFilter.call(bot, data);
+  });
+};
+
+Bot.bots = {};    //Holder for Bot objects
 
 //Working now? Want to be more flexible, though.
 function isRhymeInArray(words) {
@@ -161,6 +388,10 @@ function isRhymeInArray(words) {
   for (; w < ww; w += 1) {
     word = words[w];
     
+    if (word instanceof String) {
+      word = new Word(word);
+    }
+
     if (word.phonemes) {
       //console.log('words[' + w + ']: ' + words[w]);
       toCompare = word.rhymeGreedy.join(' ').replace(/\d/g,'');                                 //Strip numbers for looser vowel matching
@@ -206,7 +437,8 @@ function findRhymes(fullLyric) {
       if (wordsToRhyme.length === 0) {                                                      //If first line in a new tweetable cluster:
         tweetLyric = line;                                                                       //|-set this line as the root for a new potential tweet
         wordsToRhyme = [lastWord];                                                          //|-seed grouping of words to check for rhyme with last word
-      } else {                                                                              //Otherwise...
+      } 
+      else {                                                                              //Otherwise...
         if (tweetLyric.length + line.length + 3 <= 117) {                                        //|-If existing + this + link will fit in a tweet:
             tweetLyric += ' / ' + line;                                                          //|-Add this line to the potential tweet body
 
@@ -215,10 +447,12 @@ function findRhymes(fullLyric) {
               (wordsToRhyme.length > 1 && isRhymeInArray(wordsToRhyme)) ? theRhymes.push(tweetLyric) : nonRhymes.push(tweetLyric);
               tweetLyric = line;                                                                 //|-----set this line as the root for a new potential tweet
               wordsToRhyme = [lastWord];                                                    //|-----seed grouping of words to check for rhyme with last word
-            } else {                                                                        //|---Otherwise...
+            } 
+            else {                                                                        //|---Otherwise...
               wordsToRhyme.push(lastWord);                                                  //|-----Add last word to rhyme pool and move on
             }
-        } else {                                                                            //|-If existing + this + link will be too long to tweet
+        } 
+        else {                                                                            //|-If existing + this + link will be too long to tweet
           (wordsToRhyme.length > 1 && isRhymeInArray(wordsToRhyme)) ? theRhymes.push(tweetLyric) : nonRhymes.push(tweetLyric);
           tweetLyric = line;                                                                     //|--set this line as the root for a new potential tweet
           wordsToRhyme = [lastWord];                                                        //|--seed grouping of words to check for rhyme with last word
@@ -230,13 +464,131 @@ function findRhymes(fullLyric) {
   //Return array of chunks with tweetLyrics, or all the chunks found if none have known tweetLyrics.
   if (theRhymes.length > 0) {
     return theRhymes;
-  } else {
+  } 
+  else {
     return nonRhymes;
   }
 }
 
-//Do the damn thang
-function makeLyrpicTweet(bot) {
+//Search 100 recent tweets for those with certain number of syllables
+Bot.prototype.syllableFilter = function(bot) {
+  if (typeof bot === 'undefined') {
+    bot = this;
+  }
+  if (!(bot instanceof Bot)) {
+    throw(new Error('this is not a Bot within syllableFilter()!'));
+  }
+
+    var T = bot.T,
+        tweetQueue = bot.tweetQueue,
+        queueMax = bot.queueMax,
+        prefix = bot.prefix || '',
+        suffix = bot.suffix || '',
+        targetSyllables = bot.targetSyllables,
+        searchParams  = { 
+          "q": 'lang:en', 
+          "result-type": 'recent', 
+          "count": 100, 
+        };
+
+  T.get('search/tweets', searchParams, function(err, reply) {
+    if (err) {console.log(err);}
+
+    var s, ss,
+        t,
+        text,
+        sepCount,
+        sCount,
+        tArr,
+        w, ww,
+        word,
+        tweetContent = '',
+        wordSep       = /^\w|[^\w']+(?!\W*$)/g,
+        stripEntities = /^RT |[@#].+?[\S]+?\s|[@#][^@#]+$|http:\/\/[\S]+|[,\|\\\/\-\.]+|[:;]\-?[dxpc3be]|[o\^x]_+?[o\^x]/gi; //remove RT prefix, mentions, hashtags, common emoticons
+
+    for (s = 0, ss = reply.statuses.length; s < ss; s++) {
+      t = reply.statuses[s];
+      text = t.text.replace(stripEntities, '').trim();
+      sepCount = (text.match(wordSep) || []).length;
+      
+      //Quick filter for tweets with more words than we want syllables, or too long to tweet.
+      if ( (text.length + prefix.length + suffix.length) <= 140 && sepCount > 0 && sepCount <= targetSyllables) {
+        //console.log(('SEEMS LEGIT: ').green)
+        //console.log((text).grey)
+        tArr = text.replace('-',' ').split(' ');
+
+        for (w = 0, ww= tArr.length, sCount = 0; w < ww; w++) {
+          word = tArr[w].replace(/^\W+|\W+$/g,'').trim();
+          if (word !== '') {
+            sCount += (new Word(word).countSyllables() || 1000); //intentionally overrun syllable target if no pronunciation found
+            if (word === 'our' || word === 'hour') {sCount -= 1;} //adjust down syllable count where we disagree with CMUDict
+            //console.log('+ ' + word + '= ' + sCount);
+            if (sCount > targetSyllables) {
+              break;
+            }
+          }
+        }
+
+        if (sCount === targetSyllables) {
+          //console.log('We got one! : ', text);
+          tweetContent = prefix + text + suffix;
+          tweetQueue.push({status: tweetContent, in_reply_to_status_id: t.id});
+        }
+      }
+    }
+    
+    //Keep our queue under a certain size, ditching oldest Tweets
+    if (tweetQueue.length > queueMax) {
+        tweetQueue = tweetQueue.slice(queueMax - 50);
+    }
+  });
+};
+
+//Send Tweet from Bot's prepared array
+Bot.prototype.tweetFromQueue = function(bot, isRandom) {
+  if (typeof bot === 'undefined' && this instanceof Bot) {
+    bot = this;
+  }
+  if (!(bot instanceof Bot)) {
+    throw(new Error('this is not a Bot within tweetFromQueue()!'));
+  }
+  
+  var T = bot.T,
+      tweetQueue = bot.tweetQueue,
+      queuedTweet;
+  
+  if (isRandom) {
+    queuedTweet = randomFromArray(bot.tweetQueue);
+  }
+  else {
+    queuedTweet = tweetQueue.shift();
+  }
+      
+
+  if (typeof queuedTweet === 'undefined') {
+      return;
+  }
+  else {
+    if (process.env['NODE_ENV'] === 'production') {
+      T.post('statuses/update', queuedTweet, function(err, reply) {
+        if (err) {
+          console.log(err); //Should actually catch this.
+        }
+      });
+    }
+    console.log(queuedTweet.status);
+  }
+};
+
+//Main function for bots of type 'lyrpictweet'
+Bot.prototype.makeLyrpicTweet = function(bot) {
+  if (typeof bot === 'undefined' && this instanceof Bot) {
+    bot = this;
+  }
+  if (!(bot instanceof Bot)) {
+    throw(new Error('this is not a Bot within makeLyrpicTweet()!'));
+  }
+
   var T = bot.T,
       tweetContent = '',
       artistAndTitle = bot.getArtistTitlePair(),
@@ -281,17 +633,18 @@ function makeLyrpicTweet(bot) {
             });
         }
       }, "json");
-    } else {
+    }
+    else {
       console.log('ERROR! No lyrics in GET response. (Timeout? Bad request?)');
       try {
-          makeLyrpicTweet(bot);
+          bot.makeLyrpicTweet();
         }
         catch (e) {
           console.log(e);
         }
     }
   }, "json");
-}
+};
 
 //Immediate function to construct bots and make setInterval calls:
 (function (botConfigs) {
