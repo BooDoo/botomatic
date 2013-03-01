@@ -122,7 +122,7 @@ var credentials = {
       twitter:              credentials.twitter_ct_races,
       targetSyllables:      7,
       //prefix:             '',
-      suffix:               ' / doo-dah, doo-dah…',
+      suffix:               ' / doo-dah, doo-dahâ€¦',
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*10 : 30000,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000
     }
