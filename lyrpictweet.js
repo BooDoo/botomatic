@@ -61,6 +61,26 @@ function setArgDefault(arg, defaultValue, type) {
   return arg;  
 }
 
+function postTweet(T, tweet) {
+  if (typeof tweet === 'string') {
+    tweet = {status: tweet};
+  }
+  
+  if (process.env['NODE_ENV'] === 'production') {
+    T.post('statuses/update', tweet, function (err, reply) {
+      if (err) {
+        console.log('ERROR tweeting: ', JSON.stringify(err));
+      }
+      else {
+        console.log('Successfully tweeted: ', tweet.status);
+      }
+    });    
+  }
+  else {
+    console.log('Would tweet: ', tweet.status);
+  }
+}
+
 //Form the request URL for retrieving ChartLyrics API data
 function makeChartLyricsURL(song) {
     return 'http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?'
@@ -338,12 +358,7 @@ Bot.prototype.secondFilter = function secondFilter (data, bot) {
   //console.log(tweetContent.length);
 
   // tweet it!    
-
-  if (process.env['NODE_ENV'] === 'production') {
-    T.post('statuses/update', {
-      status: tweetContent
-    }, function (err, reply) {});
-  }
+  postTweet(T, tweetContent);
 };
 
 
@@ -565,14 +580,7 @@ Bot.prototype.tweetFromQueue = function(bot, isRandom) {
       return;
   }
   else {
-    if (process.env['NODE_ENV'] === 'production') {
-      T.post('statuses/update', queuedTweet, function(err, reply) {
-        if (err) {
-          console.log(err); //Should actually catch this.
-        }
-      });
-    }
-    console.log(queuedTweet.status);
+    postTweet(T, queuedTweet);
   }
 };
 
@@ -616,13 +624,7 @@ Bot.prototype.makeLyrpicTweet = function(bot) {
         console.log(tweetContent);
 
         //Only tweet if in production environment
-        if (process.env.NODE_ENV == 'production') {
-          T.post('statuses/update', { status: tweetContent}, function(err, reply) {
-            console.log("error: " + err);
-            console.log("reply: " + reply);
-            console.log('...\n\n');
-            });
-        }
+        postTweet(T, tweetContent);
       }, "json");
     }
     else {
