@@ -180,6 +180,13 @@ function Bot (botConfig) {
 }
 
 Bot.prototype.tweetQueueFromArray = function(bot) {
+  if (typeof bot === 'undefined') {
+    bot = this;
+  }
+  if (!(bot instanceof Bot)) {
+    throw(new Error('bot is not a Bot within tweetQueueFromArray()!'));
+  }
+
   var tweetQueue = [],
       prefix = bot.prefix || '',
       suffix = bot.suffix || '',
@@ -190,25 +197,41 @@ Bot.prototype.tweetQueueFromArray = function(bot) {
   });
   
   return tweetQueue;
-}
+};
 
-Bot.prototype.getArtistTitlePair = function() {
-  var artist = randomFromArray(this.artists),
-      title = randomFromArray(this.songs[artist]);
+Bot.prototype.getArtistTitlePair = function(bot) {
+  if (typeof bot === 'undefined') {
+    bot = this;
+  }
+  if (!(bot instanceof Bot)) {
+    throw(new Error('bot is not a Bot within getArtistTitlePair()!'));
+  }
+
+  var artist = randomFromArray(bot.artists),
+      title = randomFromArray(bot.songs[artist]);
   return {"artist": artist, "title": title};
 };
 
 // Retrieve page somewhere 1-41 from Flickr photos with particular tags and
 // CC or more liberal license, sorted by relevance:
-Bot.prototype.getFlickrURL = function (pageCount) {
+Bot.prototype.getFlickrURL = function (bot, pageCount) {
+  if (typeof bot === 'undefined') {
+    bot = this;
+  }
+  if (!(bot instanceof Bot)) {
+    throw(new Error('bot is not a Bot within getFlickrURL()!'));
+  }
+  
   if (typeof pageCount === 'undefined') {
     pageCount = 41;
   }
   
-  var randomPage =  Math.floor((Math.random() * pageCount) + 1),
+  var tags       =  bot.tags,
+      flickr_key =  bot.flickr.flickr_key,
+      randomPage =  Math.floor((Math.random() * pageCount) + 1),
       flickrURL  =  "http://api.flickr.com/services/rest/?method=flickr.photos.search&" +
-                    "api_key=" + this.flickr.flickr_key + "&" +
-                    "tags=" + this.tags + "&" +
+                    "api_key=" + flickr_key + "&" +
+                    "tags=" + tags + "&" +
                     "license=1%7C2%7C3%7C4%7C5%7C6%7C7%7C8&" +
                     "sort=relevance&" +
                     "safe_search=1&" +
@@ -220,14 +243,16 @@ Bot.prototype.getFlickrURL = function (pageCount) {
   return flickrURL;
 };
 
-Bot.prototype.secondFilter = function secondFilter (data) {
+Bot.prototype.secondFilter = function secondFilter (data, bot) {
   data = JSON.parse(data);
-  if (!(this instanceof Bot)) {
-    throw(new Error('this is not a Bot within secondFilter()!'));
+  if (typeof bot === 'undefined') {
+    bot = this;
+  }
+  if (!(bot instanceof Bot)) {
+    throw(new Error('bot is not a Bot within secondFilter()!'));
   }
 
-  var bot = this,
-      T = bot.T,
+  var T = bot.T,
       pivot = bot.pivot,
       firsts = bot.firsts,
       results = data.results,
@@ -332,15 +357,16 @@ Bot.prototype.secondFilter = function secondFilter (data) {
 };
 
 
-Bot.prototype.firstFilter = function firstFilter (data) {
+Bot.prototype.firstFilter = function firstFilter (data, bot) {
   // parse them from JSON into a javascript object called 'data'
   data = JSON.parse(data);
-
-  if (!(this instanceof Bot)) {
+  if (typeof bot === 'undefined') {
+    bot = this;
+  }
+  if (!(bot instanceof Bot)) {
     throw(new Error('this is not a Bot within firstFilter()!'));
   }
-  var bot = this,
-      results = data.results,
+  var results = data.results,
       firsts = bot.firsts,
       pivot = bot.pivot,
       secondCriterion = bot.secondCriterion,
@@ -531,7 +557,7 @@ Bot.prototype.syllableFilter = function(bot) {
 
         if (sCount === targetSyllables) {
           //console.log('We got one! : ', text);
-          tweetContent = prefix + text + suffix;
+          tweetContent = ent.decode(prefix + text + suffix);
           tweetQueue.push({status: tweetContent, in_reply_to_status_id: t.id});
         }
       }
