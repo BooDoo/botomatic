@@ -171,8 +171,25 @@ function Bot (botConfig) {
       //this.IntervalId = setInterval(this.tweetFromQueue, this.interval, this);
       this.intervalId = setInterval(this.makeTweetMash, this.interval, this);
   }
+  else if (this.type === 'reminder') {
+    this.tweetQueue = this.tweetQueueFromArray(this.contentPool);
+    this.intervalId = setInterval(this.tweetFromQueue, this.interval, this, this.isRandom);
+  }
 
   Bot.bots[this.handle] = this;
+}
+
+Bot.prototype.tweetQueueFromArray = function(bot) {
+  var tweetQueue = [],
+      prefix = bot.prefix,
+      suffix = bot.suffix,
+      contentPool = bot.contentPool;
+      
+  contentPool.forEach(function (t) {
+    tweetQueue.push( {status: prefix || '' + t + suffix || ''});
+  });
+  
+  return tweetQueue;
 }
 
 Bot.prototype.getArtistTitlePair = function() {
@@ -521,10 +538,25 @@ Bot.prototype.syllableFilter = function() {
 };
 
 //Send Tweet from Bot's prepared array
-Bot.prototype.tweetFromQueue = function() {
-  var bot = this,
-      T = bot.T,
-      queuedTweet = bot.tweetQueue.shift();
+Bot.prototype.tweetFromQueue = function(bot, isRandom) {
+  if (typeof bot === 'undefined' && this instanceof Bot) {
+    bot = this;
+  }
+  if (!(bot instanceof Bot)) {
+    throw(new Error('this is not a Bot within tweetFromQueue()!'));
+  }
+  
+  var T = bot.T,
+      tweetQueue = bot.tweetQueue,
+      queuedTweet;
+  
+  if (isRandom) {
+    queuedTweet = randomFromArray(bot.tweetQueue);
+  }
+  else {
+    queuedTweet = tweetQueue.shift();
+  }
+      
 
   if (typeof queuedTweet === 'undefined') {
       return;
