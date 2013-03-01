@@ -52,8 +52,10 @@ function setArgDefault(arg, defaultValue, type) {
   if (typeof arg === 'undefined') { 
    arg = defaultValue;
   }
-  if (typeof type !== undefined && !(arg instanceof type)) {
-    throw(new Error('arg is not required type within ' + arguments.callee.caller.name + '(' + typeof arg + '!==' + type.name + ')'));
+  if (typeof type !== 'undefined') {
+    if( !(arg instanceof type)) {
+      throw(new Error('arg is not required type within ' + arguments.callee.caller.name + '(' + typeof arg + '!==' + type.name + ')'));
+    }
   }
 
   return arg;  
@@ -586,7 +588,7 @@ Bot.prototype.makeLyrpicTweet = function(bot) {
   console.log(artistAndTitle);
 
   restclient.get(yql,function(data){
-    if(data.query.results && data.query.results.GetLyricResult && data.query.results.GetLyricResult.Lyric){
+    if(data.query && data.query.results && data.query.results.GetLyricResult){
       var rhymes = [],
           flickrURL,
           picURL = '',
