@@ -61,6 +61,9 @@ function setArgDefault(arg, defaultValue, type) {
   return arg;  
 }
 
+
+//The postTweet utility function requires a node-twit instance and the content of a tweet
+//(tweet can be either a string or a node-twit compatible object.)
 function postTweet(T, tweet) {
   if (typeof tweet === 'string') {
     tweet = {status: tweet};
@@ -87,6 +90,7 @@ function makeChartLyricsURL(song) {
             + 'artist=' + song.artist + '&song=' + song.title;
 }
 
+//Creates a YQL query based on the passed URL
 function makeYQL(url) {
     var lyricYQL = 'http://query.yahooapis.com/v1/public/yql?q='
                  + encodeURIComponent('select * from xml where url="' + url + '"')
@@ -128,6 +132,8 @@ Word.prototype.toString = function() {
   return this.literal;
 };
 
+//Count syllables basde on phonemes (ARPABET format from CMUDict) in Word object
+//Sets .syllableCount on Word and also returns the count (or null)
 Word.prototype.countSyllables = function() {
   var word = this,
       p, pp,
@@ -183,9 +189,7 @@ function Bot (botConfig) {
     
   }
   else if (this.type === 'syllablecount') {    
-    if (typeof this.queueMax === 'undefined') {
-        this.queueMax = 300; //Arbitrary limit on queue size if none given
-    }
+    this.queueMax = setArgDefault(this.queueMax, 300);
     this.tweetQueue = [];
     this.searchIntervalId = setInterval(this.syllableFilter, this.searchInterval, this);
     this.intervalId = setInterval(this.tweetFromQueue, this.interval, this);
@@ -388,6 +392,8 @@ Bot.prototype.firstFilter = function firstFilter (data, bot) {
   });
 };
 
+
+//Based on Darius K's @LatourSwag bot source
 Bot.prototype.makeTweetMash = function makeTweetMash(bot) {
   bot = setArgDefault(bot, this, Bot);
   
@@ -442,19 +448,17 @@ function findRhymes(fullLyric) {
       nonRhymes     = [],
       wordsToRhyme  = [],
       tweetLyric    = '',
-      cleanupRE     = /[\[\}].+?[\]\}]|[\[\(\{]?(x\d+|\d+x)[\)\]\}]?|&.+?;/gi;
+      cleanupRE     = /[\[\}].+?[\]\}]|[\[\(\{]?(x\d+|\d+x)[\)\]\}]?|&.+?;|^\(|\)$/gi;
 
   for (; l<ll; l++) {
     line = fullLyric[l].replace(cleanupRE,'').trim();
-    if (line.length < 2) {
-      continue;                                                                             //No content, move along
-    }
-    
-    //Get last word in line as Word object
-    lastWord = line.match(/[\S]+$/)[0].replace(/\W/g,'').toUpperCase();
-    lastWord = Word.words[lastWord] || new Word(lastWord);
 
-    if (line[line.length - 1] != ':' && line[line.length - 1] != ']') {                     //Try to omit lines like "CHORUS:" and "[x3]"
+    if (line.length > 1 && line[line.length - 1] != ':' && line[line.length - 1] != ']') {  //Try to omit lines like "CHORUS:" and "[x3]"
+    
+      //Get last word in line as Word object
+      lastWord = line.match(/[\S]+$/)[0].replace(/\W/g,'').toUpperCase();
+      lastWord = Word.words[lastWord] || new Word(lastWord);
+    
       if (wordsToRhyme.length === 0) {                                                      //If first line in a new tweetable cluster:
         tweetLyric = line;                                                                       //|-set this line as the root for a new potential tweet
         wordsToRhyme = [lastWord];                                                          //|-seed grouping of words to check for rhyme with last word
@@ -463,26 +467,26 @@ function findRhymes(fullLyric) {
         if (tweetLyric.length + line.length + 3 <= 117) {                                        //|-If existing + this + link will fit in a tweet:
             tweetLyric += ' / ' + line;                                                          //|-Add this line to the potential tweet body
 
-            if (l+1 < ll && tweetLyric.length + fullLyric[l+1].length + 3 > 117) {               //|---If this line will be the last in the group
-              wordsToRhyme.push(lastWord);                                                  //|-----Add its last word into the rhyme pool
+            if (l+1 < ll && tweetLyric.length + fullLyric[l+1].length + 3 > 117) {
+              wordsToRhyme.push(lastWord);
               (wordsToRhyme.length > 1 && isRhymeInArray(wordsToRhyme)) ? theRhymes.push(tweetLyric) : nonRhymes.push(tweetLyric);
-              tweetLyric = line;                                                                 //|-----set this line as the root for a new potential tweet
-              wordsToRhyme = [lastWord];                                                    //|-----seed grouping of words to check for rhyme with last word
-            } 
-            else {                                                                        //|---Otherwise...
-              wordsToRhyme.push(lastWord);                                                  //|-----Add last word to rhyme pool and move on
+              tweetLyric = line;
+              wordsToRhyme = [lastWord];
+            }
+            else {
+              wordsToRhyme.push(lastWord);
             }
         } 
         else {                                                                            //|-If existing + this + link will be too long to tweet
           (wordsToRhyme.length > 1 && isRhymeInArray(wordsToRhyme)) ? theRhymes.push(tweetLyric) : nonRhymes.push(tweetLyric);
-          tweetLyric = line;                                                                     //|--set this line as the root for a new potential tweet
-          wordsToRhyme = [lastWord];                                                        //|--seed grouping of words to check for rhyme with last word
+          tweetLyric = line;
+          wordsToRhyme = [lastWord];
         }
       }
     }
   }
 
-  //Return array of chunks with tweetLyrics, or all the chunks found if none have known tweetLyrics.
+  //Return array of chunks with rhymes, or all the chunks found if none have known rhymes.
   if (theRhymes.length > 0) {
     return theRhymes;
   } 
@@ -621,7 +625,6 @@ Bot.prototype.makeLyrpicTweet = function(bot) {
 
         //append the Flickr URL to our tweet and output to log for reference
         tweetContent += ' ' + picURL;
-        console.log(tweetContent);
 
         //Only tweet if in production environment
         postTweet(T, tweetContent);
