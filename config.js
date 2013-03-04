@@ -31,35 +31,6 @@ var credentials = {
       access_token_secret:  process.env['CTR_TWITTER_ACCESS_TOKEN_SECRET']
     },
 
-<<<<<<< HEAD
-=======
-    twitter_latour:
-    {
-      service:              "twitter",
-      consumer_key:         process.env['DOG_TWITTER_CONSUMER_KEY'],
-      consumer_secret:      process.env['DOG_TWITTER_CONSUMER_SECRET'],
-      access_token:         process.env['DOG_TWITTER_ACCESS_TOKEN'],
-      access_token_secret:  process.env['DOG_TWITTER_ACCESS_TOKEN_SECRET']
-    },
-
-    twitter_avoidComments:
-    {
-      service:              "twitter",
-      consumer_key:         process.env['DOG_TWITTER_CONSUMER_KEY'],
-      consumer_secret:      process.env['DOG_TWITTER_CONSUMER_SECRET'],
-      access_token:         process.env['DOG_TWITTER_ACCESS_TOKEN'],
-      access_token_secret:  process.env['DOG_TWITTER_ACCESS_TOKEN_SECRET']
-    },
-    
-    twitter_mlg420:
-    {
-      service:              "twitter",
-      consumer_key:         process.env['DOG_TWITTER_CONSUMER_KEY'],
-      consumer_secret:      process.env['DOG_TWITTER_CONSUMER_SECRET'],
-      access_token:         process.env['DOG_TWITTER_ACCESS_TOKEN'],
-      access_token_secret:  process.env['DOG_TWITTER_ACCESS_TOKEN_SECRET']      
-    },
-
     twitter_xyisx:
     {
       service:              "twitter",
@@ -69,7 +40,6 @@ var credentials = {
       access_token_secret:  process.env['XYX_TWITTER_ACCESS_TOKEN_SECRET']      
     },
 
->>>>>>> WIP
     flickr_boodoo:
     {
       service:              "flickr",
@@ -138,7 +108,6 @@ var credentials = {
   },
 
   bots = {
-
     rapcats:
     {
       type:                 "lyrpictweet",
@@ -172,44 +141,8 @@ var credentials = {
       //queueMax:             300,
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*10 : 30000,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000
-<<<<<<< HEAD
-=======
-    },
-    
-    latourswag:
-    {
-      type:                 "tweetmash",
-      handle:               "latourswag",
-      twitter:              credentials.twitter_latour,
-      criteria:             ["#swag and", "from:latourbot"],
-      pivot:                " and ",
-      //searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*10 : 30000,
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000
-    },
-    
-    commentsreminder: {
-      type:             "reminder",
-      handle:           "commentsreminder",
-      twitter:          credentials.twitter_avoidComments,
-      contentPool:      contentPools.avoidComments,
-      isRandom:         true,
-      //prefix:           '',
-      //suffix:           '',
-      interval:         process.env.NODE_ENV === 'production' ? 60000*60*24 : 30000
     },
 
-    mlg420:
-    {
-      type:             "youtube",
-      handle:           "mlg420",
-      twitter:          credentials.twitter_mlg420,
-      criteria:         'mlg+420',
-      //contentPool:      ,
-      //isRandom:         true,
-      searchInterval:   process.env.NODE_ENV === 'production' ? 60000*60*4 : 30000,
-      interval:         process.env.NODE_ENV === 'production' ? 60000*60*8 : 60000
-    },
-    
     xyisx:
     {
       type:             "snowclone",
@@ -235,7 +168,6 @@ var credentials = {
       },
       searchInterval:   process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
       interval:         process.env['NODE_ENV'] === 'production' ? 60000*15   : 30000
->>>>>>> WIP
     }
   };
 
