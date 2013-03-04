@@ -13,8 +13,9 @@ Currently used for Twitter bots @GCatPix and @CWDogPix.
 
 */
 
-var restclient  = require('node-restclient'),
-    CONFIG      = require('./config.js'),
+var CONFIG      = require('./config.js'),
+    _           = require('lodash'),
+    restclient  = require('node-restclient'),
     Twit        = require('twit'),
     express     = require('express'),
     app         = express(),
@@ -219,6 +220,15 @@ function Bot (botConfig) {
     this.searchIntervalId = setInterval(this.youtubeFilter, this.searchInterval, this);
     this.intervalId = setInterval(this.tweetFromQueue, this.interval, this, this.isRandom);
   }
+  else if (this.type === 'snowclone') {
+    for (var w in this.words) {
+      this[w + 's'] = {};
+    }
+    this.template = _.template(this.format);
+    this.populateRandomWords(this); //Initial population of the random word pools.
+    this.searchIntervalId = setInterval(this.populateRandomWords, this.searchInterval, this);
+    this.intervalId = setInterval(this.makeSnowclone, this.interval, this);
+  }
 
   Bot.bots[this.handle] = this;
 }
@@ -244,6 +254,64 @@ Bot.prototype.getArtistTitlePair = function(bot) {
   var artist = randomFromArray(bot.artists),
       title = randomFromArray(bot.songs[artist]);
   return {"artist": artist, "title": title};
+};
+
+Bot.prototype.populateRandomWords = function(bot) {
+  bot = setArgDefault(bot, this, Bot);
+  
+  var w, 
+      words = bot.words,
+      wordnikURLs = bot.getWordnikURLs(),
+      wordnikURL = '';
+  
+  for (w in words) {
+    wordnikURL = wordnikURLs[w];
+    restclient.get(wordnikURL, function(data) {
+      //data = JSON.parse(data);
+      _.each(data, function(el, ind, arr) {
+        console.log(JSON.stringify(el));
+        console.log('bot[', w, 's][', el.word, ']  = ', el.word);
+        bot[w + 's'][el.word]  = el.word;
+      });
+      console.log(w + 's: ', JSON.stringify(bot[w +'s']));
+    });
+  }
+};
+
+Bot.prototype.getWordnikURLs = function(bot) {
+  bot = setArgDefault(bot, this, Bot);
+  var w,
+      words = bot.words,
+      api_key = bot.wordnik.api_key,
+      toReturn = {};
+      
+  for (w in words) {
+    toReturn[w] = "http://api.wordnik.com//v4/words.json/randomWords?" + words[w] + "&api_key=" + api_key;
+    console.log(w, 'url: ', toReturn[w]);
+  }
+  
+  return toReturn;
+};
+
+Bot.prototype.makeSnowclone = function(bot) {
+  bot = setArgDefault(bot, this, Bot);
+  var w,
+      forTemplate = {},
+      template = bot.template,
+      words = bot.words,
+      T = bot.T,
+      wordPool, aWord,
+      tweetContent = '';
+      
+  for (w in words) {
+    wordPool = bot[w + 's'];
+    aWord = randomFromArray(_.toArray(wordPool));
+    forTemplate[w] = aWord;
+    delete wordPool[aWord];
+  }
+
+  tweetContent = template(forTemplate);
+  postTweet(T, tweetContent);
 };
 
 Bot.prototype.getYoutubeURL = function(bot) {

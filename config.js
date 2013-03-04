@@ -58,11 +58,26 @@ var credentials = {
       access_token_secret:  process.env['DOG_TWITTER_ACCESS_TOKEN_SECRET']      
     },
 
+    twitter_xyisx:
+    {
+      service:              "twitter",
+      consumer_key:         process.env['DOG_TWITTER_CONSUMER_KEY'],
+      consumer_secret:      process.env['DOG_TWITTER_CONSUMER_SECRET'],
+      access_token:         process.env['DOG_TWITTER_ACCESS_TOKEN'],
+      access_token_secret:  process.env['DOG_TWITTER_ACCESS_TOKEN_SECRET']      
+    },
+
     flickr_boodoo:
     {
       service:              "flickr",
       flickr_key:           process.env['BOODOO_FLICKR_KEY'],
       flickr_secret:        process.env['BOODOO_FLICKR_SECRET']
+    },
+    
+    wordnik_boodoo:
+    {
+      service:              "wordnik",
+      api_key:              process.env['BOODOO_WORDNIK_KEY']
     }
   },
 
@@ -124,6 +139,7 @@ var credentials = {
   },
 
   bots = {
+/*
     rapcats:
     {
       type:                 "lyrpictweet",
@@ -191,6 +207,31 @@ var credentials = {
       //isRandom:         true,
       searchInterval:   process.env.NODE_ENV === 'production' ? 60000*60*4 : 30000,
       interval:         process.env.NODE_ENV === 'production' ? 60000*60*8 : 60000
+    },
+*/    
+    xyisx:
+    {
+      type:             "snowclone",
+      handle:           "xyisx",
+      twitter:          credentials.twitter_xyisx,
+      wordnik:          credentials.wordnik_boodoo,
+      format:           "<%= word1 %> <%= word2 %> is <%= word1 %>",
+      words:            
+      {
+        word1:          'includePartOfSpeech=adjective' +
+                        '&excludePartOfSpeech=verb-intransitive' +
+                        '&hasDictionaryDef=true' +
+                        '&limit=10' +
+                        '&minCorpusCount=5000',
+                        
+        word2:          'includePartOfSpeech=noun' + 
+                        '&excludePartOfSpeech=noun-plural,pronoun,noun-posessive,proper-noun-posessive,suffix,idiom,affix' +
+                        '&hasDictionaryDef=true' +
+                        '&limit=10' +
+                        '&minCorpusCount=5000'
+      },
+      searchInterval:   process.env['NODE_ENV'] === 'production' ? 60000*60 : 60000*2,
+      interval:         process.env['NODE_ENV'] === 'production' ? 60000*15 : 30000
     }
   };
 
