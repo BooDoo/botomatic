@@ -48,6 +48,15 @@ var credentials = {
       access_token:         process.env['DOG_TWITTER_ACCESS_TOKEN'],
       access_token_secret:  process.env['DOG_TWITTER_ACCESS_TOKEN_SECRET']
     },
+    
+    twitter_mlg420:
+    {
+      service:              "twitter",
+      consumer_key:         process.env['DOG_TWITTER_CONSUMER_KEY'],
+      consumer_secret:      process.env['DOG_TWITTER_CONSUMER_SECRET'],
+      access_token:         process.env['DOG_TWITTER_ACCESS_TOKEN'],
+      access_token_secret:  process.env['DOG_TWITTER_ACCESS_TOKEN_SECRET']      
+    },
 
     flickr_boodoo:
     {
@@ -145,6 +154,7 @@ var credentials = {
       targetSyllables:      7,
       //prefix:             '',
       suffix:               ' / doo-dah, doo-dah…',
+      //queueMax:             300,
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*10 : 30000,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000
     },
@@ -169,6 +179,18 @@ var credentials = {
       //prefix:           '',
       //suffix:           '',
       interval:         process.env.NODE_ENV === 'production' ? 60000*60*24 : 30000
+    },
+
+    mlg420:
+    {
+      type:             "youtube",
+      handle:           "mlg420",
+      twitter:          credentials.twitter_mlg420,
+      criteria:         'mlg+420',
+      //contentPool:      ,
+      //isRandom:         true,
+      searchInterval:   process.env.NODE_ENV === 'production' ? 60000*60*4 : 30000,
+      interval:         process.env.NODE_ENV === 'production' ? 60000*60*8 : 60000
     }
   };
 

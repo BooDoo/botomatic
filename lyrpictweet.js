@@ -212,6 +212,13 @@ function Bot (botConfig) {
     this.tweetQueue = this.tweetQueueFromArray(this);
     this.intervalId = setInterval(this.tweetFromQueue, this.interval, this, this.isRandom);
   }
+  else if (this.type === 'youtube') {
+    this.queueMax = setArgDefault(this.queueMax, 300);
+    this.tweetQueue = [];
+    this.inQueue = {};
+    this.searchIntervalId = setInterval(this.youtubeFilter, this.searchInterval, this);
+    this.intervalId = setInterval(this.tweetFromQueue, this.interval, this, this.isRandom);
+  }
 
   Bot.bots[this.handle] = this;
 }
@@ -219,7 +226,7 @@ function Bot (botConfig) {
 Bot.prototype.tweetQueueFromArray = function(bot) {
   bot = setArgDefault(bot, this, Bot);
 
-  var tweetQueue = [],
+  var tweetQueue = bot.tweetQueue || [],
       prefix = bot.prefix || '',
       suffix = bot.suffix || '',
       contentPool = bot.contentPool;
@@ -237,6 +244,15 @@ Bot.prototype.getArtistTitlePair = function(bot) {
   var artist = randomFromArray(bot.artists),
       title = randomFromArray(bot.songs[artist]);
   return {"artist": artist, "title": title};
+};
+
+Bot.prototype.getYoutubeURL = function(bot) {
+  bot = setArgDefault(bot, this, Bot);
+  var criteria = bot.criteria,
+      youtubeURL = 'http://gdata.youtube.com/feeds/api/videos?q=' + criteria +
+                   '&orderby=published&v=2&alt=json';
+                   
+  return youtubeURL;
 };
 
 // Retrieve page somewhere 1-41 from Flickr photos with particular tags and
@@ -261,6 +277,42 @@ Bot.prototype.getFlickrURL = function (bot, pageCount) {
   
   return flickrURL;
 };
+
+Bot.prototype.youtubeFilter = function youtubeFilter (bot) {
+  bot = setArgDefault(bot, this, Bot);
+  var youtubeURL = bot.getYoutubeURL();
+  
+  restclient.get(youtubeURL, function (data) {
+    data = JSON.parse(data);
+    
+    var res = data.feed.entry,
+        e, ee,
+        entry,
+        vidURL,
+        tweetContent,
+        queueMax = bot.queueMax,
+        inQueue = bot.inQueue,
+        tweetQueue = bot.tweetQueue;
+    
+    for (e = 0, ee = res.length; e < ee; e++) {
+      entry = res[e];
+      if (entry.title.$t.length < 117 && typeof inQueue[entry.id.$t] === 'undefined') {
+        vidURL = entry.link[0].href.substr(0,entry.link[0].href.indexOf('&')); //trim off the &feature=youtube_gdata param
+        tweetContent = entry.title.$t + ' ' + vidURL;
+        console.log('Gonna push: ', tweetContent);
+        tweetQueue.push(tweetContent);
+        inQueue[entry.id.$t] = tweetContent;
+      }
+    }
+    
+    console.log('tweetQueue length: ', bot.tweetQueue.length);
+    
+    //Keep our queue under a certain size, ditching oldest Tweets
+    if (tweetQueue.length > queueMax) {
+        tweetQueue = tweetQueue.slice(queueMax - 50);
+    }
+  });
+}
 
 Bot.prototype.secondFilter = function secondFilter (data, bot) {
   bot = setArgDefault(bot, this, Bot);
