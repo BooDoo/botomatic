@@ -61,10 +61,10 @@ var credentials = {
     twitter_xyisx:
     {
       service:              "twitter",
-      consumer_key:         process.env['DOG_TWITTER_CONSUMER_KEY'],
-      consumer_secret:      process.env['DOG_TWITTER_CONSUMER_SECRET'],
-      access_token:         process.env['DOG_TWITTER_ACCESS_TOKEN'],
-      access_token_secret:  process.env['DOG_TWITTER_ACCESS_TOKEN_SECRET']      
+      consumer_key:         process.env['XYX_TWITTER_CONSUMER_KEY'],
+      consumer_secret:      process.env['XYX_TWITTER_CONSUMER_SECRET'],
+      access_token:         process.env['XYX_TWITTER_ACCESS_TOKEN'],
+      access_token_secret:  process.env['XYX_TWITTER_ACCESS_TOKEN_SECRET']      
     },
 
     flickr_boodoo:
@@ -222,16 +222,18 @@ var credentials = {
                         '&excludePartOfSpeech=verb-intransitive' +
                         '&hasDictionaryDef=true' +
                         '&limit=10' +
+                        '&minDictionaryCount = 5' +
                         '&minCorpusCount=5000',
                         
         word2:          'includePartOfSpeech=noun' + 
                         '&excludePartOfSpeech=noun-plural,pronoun,noun-posessive,proper-noun-posessive,suffix,idiom,affix' +
-                        '&hasDictionaryDef=true' +
+                        '&hasDictionaryDef=false' +
                         '&limit=10' +
+                        '&minDictionaryCount = 5' + 
                         '&minCorpusCount=5000'
       },
-      searchInterval:   process.env['NODE_ENV'] === 'production' ? 60000*60 : 60000*2,
-      interval:         process.env['NODE_ENV'] === 'production' ? 60000*15 : 30000
+      searchInterval:   process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
+      interval:         process.env['NODE_ENV'] === 'production' ? 60000*15   : 30000
     }
   };
 
