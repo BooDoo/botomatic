@@ -26,7 +26,11 @@
     "twit": "1.0.x",
     "node-restclient": "0.0.x",
     "cmudict": "1.0.x",
-    "ent": "0.0.x"
+    "ent": "0.0.x",
+    "lodash": "1.0.x",
+    "underscore.deferred": "0.4.x",
+    "request": "2.14.x",
+    "inflection": "1.2.x"
   },
   "engines": {
     "node": "0.8.x",
