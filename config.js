@@ -156,14 +156,14 @@ var credentials = {
                         '&excludePartOfSpeech=verb-intransitive' +
                         '&hasDictionaryDef=true' +
                         '&limit=10' +
-                        '&minDictionaryCount = 5' +
+                        '&minDictionaryCount = 10' +
                         '&minCorpusCount=5000',
                         
         word2:          'includePartOfSpeech=noun' + 
                         '&excludePartOfSpeech=noun-plural,pronoun,noun-posessive,proper-noun-posessive,suffix,idiom,affix' +
                         '&hasDictionaryDef=false' +
                         '&limit=10' +
-                        '&minDictionaryCount = 5' + 
+                        '&minDictionaryCount = 10' + 
                         '&minCorpusCount=5000'
       },
       searchInterval:   process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
