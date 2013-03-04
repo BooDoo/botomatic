@@ -139,7 +139,7 @@ var credentials = {
   },
 
   bots = {
-/*
+
     rapcats:
     {
       type:                 "lyrpictweet",
@@ -208,7 +208,7 @@ var credentials = {
       searchInterval:   process.env.NODE_ENV === 'production' ? 60000*60*4 : 30000,
       interval:         process.env.NODE_ENV === 'production' ? 60000*60*8 : 60000
     },
-*/    
+    
     xyisx:
     {
       type:             "snowclone",
