@@ -15,7 +15,9 @@ Currently used for Twitter bots @GCatPix and @CWDogPix.
 
 var CONFIG      = require('./config.js'),
     _           = require('lodash'),
+    I           = require('inflection'),
     restclient  = require('node-restclient'),
+    request = require('request'),
     Twit        = require('twit'),
     express     = require('express'),
     app         = express(),
@@ -23,6 +25,8 @@ var CONFIG      = require('./config.js'),
     CMUDict     = require('cmudict').CMUDict,
     cmudict     = new CMUDict(),
     cmuNotFound = [];
+    
+    _.mixin(require('underscore.deferred'));
 
 // This is present for deployment to nodejitsu, which requires some response to http call.
 app.get('/', function(req, res){
@@ -256,24 +260,43 @@ Bot.prototype.getArtistTitlePair = function(bot) {
   return {"artist": artist, "title": title};
 };
 
+Bot.prototype.getRandomWordsPromise = function(wordHandle, bot) {
+  bot = setArgDefault(bot, this, Bot);
+  var criteria = bot.words[wordHandle],
+      api_key = bot.wordnik.api_key,
+      url = "http://api.wordnik.com//v4/words.json/randomWords?" + criteria + "&api_key=" + api_key,
+      pool = wordHandle + 's',
+      rwDeferred = _.Deferred(),
+      randomWordPromise = rwDeferred.promise();
+      
+  request({
+    url: url
+  }, function (error, response, body) {
+    if (!error && response.statusCode === 200) {
+      rwDeferred.resolve(JSON.parse(body), pool);
+    }
+    else {
+      rwDeferred.reject(error);
+    }
+  });
+  
+  return randomWordPromise;
+};
+
 Bot.prototype.populateRandomWords = function(bot) {
   bot = setArgDefault(bot, this, Bot);
   
   var w, 
-      words = bot.words,
-      wordnikURLs = bot.getWordnikURLs(),
-      wordnikURL = '';
+      words = bot.words;
   
   for (w in words) {
-    wordnikURL = wordnikURLs[w];
-    restclient.get(wordnikURL, function(data) {
-      //data = JSON.parse(data);
-      _.each(data, function(el, ind, arr) {
-        console.log(JSON.stringify(el));
-        console.log('bot[', w, 's][', el.word, ']  = ', el.word);
-        bot[w + 's'][el.word]  = el.word;
+    bot.getRandomWordsPromise(w, bot)
+    .then(function(result, pool) {
+      _.each(result, function(el, ind, arr) {
+        var word = el.word;
+        bot[pool][word] = word;
       });
-      console.log(w + 's: ', JSON.stringify(bot[w +'s']));
+      console.log(pool, ': ', JSON.stringify(bot[pool]));
     });
   }
 };
