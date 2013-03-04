@@ -77,7 +77,7 @@ function postTweet(T, tweet) {
   if (process.env['NODE_ENV'] === 'production') {
     T.post('statuses/update', tweet, function (err, reply) {
       if (err) {
-        console.log('ERROR tweeting: ', JSON.stringify(err));
+        console.log('ERROR tweeting: ', JSON.stringify(err), '\n', T.consumer_key);
       }
       else {
         console.log('Successfully tweeted: ', tweet.status);
