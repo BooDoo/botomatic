@@ -299,13 +299,13 @@ Bot.prototype.youtubeFilter = function youtubeFilter (bot) {
       if (entry.title.$t.length < 117 && typeof inQueue[entry.id.$t] === 'undefined') {
         vidURL = entry.link[0].href.substr(0,entry.link[0].href.indexOf('&')); //trim off the &feature=youtube_gdata param
         tweetContent = entry.title.$t + ' ' + vidURL;
-        console.log('Gonna push: ', tweetContent);
+        //console.log('Gonna push: ', tweetContent);
         tweetQueue.push(tweetContent);
         inQueue[entry.id.$t] = tweetContent;
       }
     }
     
-    console.log('tweetQueue length: ', bot.tweetQueue.length);
+    //console.log('tweetQueue length: ', bot.tweetQueue.length);
     
     //Keep our queue under a certain size, ditching oldest Tweets
     if (tweetQueue.length > queueMax) {
