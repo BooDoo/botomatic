@@ -31,11 +31,26 @@ var credentials = {
       access_token_secret:  process.env['CTR_TWITTER_ACCESS_TOKEN_SECRET']
     },
 
+    twitter_xyisx:
+    {
+      service:              "twitter",
+      consumer_key:         process.env['XYX_TWITTER_CONSUMER_KEY'],
+      consumer_secret:      process.env['XYX_TWITTER_CONSUMER_SECRET'],
+      access_token:         process.env['XYX_TWITTER_ACCESS_TOKEN'],
+      access_token_secret:  process.env['XYX_TWITTER_ACCESS_TOKEN_SECRET']      
+    },
+
     flickr_boodoo:
     {
       service:              "flickr",
       flickr_key:           process.env['BOODOO_FLICKR_KEY'],
       flickr_secret:        process.env['BOODOO_FLICKR_SECRET']
+    },
+    
+    wordnik_boodoo:
+    {
+      service:              "wordnik",
+      api_key:              process.env['BOODOO_WORDNIK_KEY']
     }
   },
 
@@ -122,9 +137,37 @@ var credentials = {
       twitter:              credentials.twitter_ct_races,
       targetSyllables:      7,
       //prefix:             '',
-      suffix:               ' / doo-dah, doo-dah…',
+      suffix:               ' / doo-dah, doo-dahâ€¦',
+      //queueMax:             300,
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*10 : 30000,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000
+    },
+
+    xyisx:
+    {
+      type:             "snowclone",
+      handle:           "xyisx",
+      twitter:          credentials.twitter_xyisx,
+      wordnik:          credentials.wordnik_boodoo,
+      format:           "<%= word1 %> <%= word2 %> is <%= word1 %>",
+      words:            
+      {
+        word1:          'includePartOfSpeech=adjective' +
+                        '&excludePartOfSpeech=verb-intransitive' +
+                        '&hasDictionaryDef=true' +
+                        '&limit=10' +
+                        '&minDictionaryCount=10' +
+                        '&minCorpusCount=5000',
+                        
+        word2:          'includePartOfSpeech=noun' + 
+                        '&excludePartOfSpeech=noun-plural,pronoun,noun-posessive,proper-noun-posessive,suffix,idiom,affix' +
+                        '&hasDictionaryDef=false' +
+                        '&limit=10' +
+                        '&minDictionaryCount=10' + 
+                        '&minCorpusCount=5000'
+      },
+      searchInterval:   process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
+      interval:         process.env['NODE_ENV'] === 'production' ? 60000*15   : 30000
     }
   };
 

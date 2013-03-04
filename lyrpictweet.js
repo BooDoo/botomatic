@@ -13,8 +13,11 @@ Currently used for Twitter bots @GCatPix and @CWDogPix.
 
 */
 
-var restclient  = require('node-restclient'),
-    CONFIG      = require('./config.js'),
+var CONFIG      = require('./config.js'),
+    _           = require('lodash'),
+    I           = require('inflection'),
+    restclient  = require('node-restclient'),
+    request = require('request'),
     Twit        = require('twit'),
     express     = require('express'),
     app         = express(),
@@ -22,12 +25,14 @@ var restclient  = require('node-restclient'),
     CMUDict     = require('cmudict').CMUDict,
     cmudict     = new CMUDict(),
     cmuNotFound = [];
+    
+    _.mixin(require('underscore.deferred'));
 
 // This is present for deployment to nodejitsu, which requires some response to http call.
 app.get('/', function(req, res){
     res.send('IGNORE ME.');
 });
-app.listen(3000);
+app.listen(process.env.PORT || 3000);
 
 //The cmudict module takes ~2sec on initial query; let's get that out of the way now.
 cmudict.get('initialize');
@@ -48,12 +53,49 @@ function randomFromArray(arr) {
   else {return null;}
 }
 
+function setArgDefault(arg, defaultValue, type) {
+  if (typeof arg === 'undefined') { 
+   arg = defaultValue;
+  }
+  if (typeof type !== 'undefined') {
+    if( !(arg instanceof type)) {
+      throw(new Error('arg is not required type within ' + arguments.callee.caller.name + '(' + typeof arg + '!==' + type.name + ')'));
+    }
+  }
+
+  return arg;  
+}
+
+
+//The postTweet utility function requires a node-twit instance and the content of a tweet
+//(tweet can be either a string or a node-twit compatible object.)
+function postTweet(T, tweet) {
+  if (typeof tweet === 'string') {
+    tweet = {status: tweet};
+  }
+  
+  if (process.env['NODE_ENV'] === 'production') {
+    T.post('statuses/update', tweet, function (err, reply) {
+      if (err) {
+        console.log('ERROR tweeting: ', JSON.stringify(err));
+      }
+      else {
+        console.log('Successfully tweeted: ', tweet.status);
+      }
+    });    
+  }
+  else {
+    console.log('Would tweet: ', tweet.status);
+  }
+}
+
 //Form the request URL for retrieving ChartLyrics API data
 function makeChartLyricsURL(song) {
     return 'http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?'
             + 'artist=' + song.artist + '&song=' + song.title;
 }
 
+//Creates a YQL query based on the passed URL
 function makeYQL(url) {
     var lyricYQL = 'http://query.yahooapis.com/v1/public/yql?q='
                  + encodeURIComponent('select * from xml where url="' + url + '"')
@@ -95,6 +137,8 @@ Word.prototype.toString = function() {
   return this.literal;
 };
 
+//Count syllables basde on phonemes (ARPABET format from CMUDict) in Word object
+//Sets .syllableCount on Word and also returns the count (or null)
 Word.prototype.countSyllables = function() {
   var word = this,
       p, pp,
@@ -150,9 +194,7 @@ function Bot (botConfig) {
     
   }
   else if (this.type === 'syllablecount') {    
-    if (typeof this.queueMax === 'undefined') {
-        this.queueMax = 300; //Arbitrary limit on queue size if none given
-    }
+    this.queueMax = setArgDefault(this.queueMax, 300);
     this.tweetQueue = [];
     this.searchIntervalId = setInterval(this.syllableFilter, this.searchInterval, this);
     this.intervalId = setInterval(this.tweetFromQueue, this.interval, this);
@@ -175,12 +217,30 @@ function Bot (botConfig) {
     this.tweetQueue = this.tweetQueueFromArray(this);
     this.intervalId = setInterval(this.tweetFromQueue, this.interval, this, this.isRandom);
   }
+  else if (this.type === 'youtube') {
+    this.queueMax = setArgDefault(this.queueMax, 300);
+    this.tweetQueue = [];
+    this.inQueue = {};
+    this.searchIntervalId = setInterval(this.youtubeFilter, this.searchInterval, this);
+    this.intervalId = setInterval(this.tweetFromQueue, this.interval, this, this.isRandom);
+  }
+  else if (this.type === 'snowclone') {
+    for (var w in this.words) {
+      this[w + 's'] = {};
+    }
+    this.template = _.template(this.format);
+    this.populateRandomWords(this); //Initial population of the random word pools.
+    this.searchIntervalId = setInterval(this.populateRandomWords, this.searchInterval, this);
+    this.intervalId = setInterval(this.makeSnowclone, this.interval, this);
+  }
 
   Bot.bots[this.handle] = this;
 }
 
 Bot.prototype.tweetQueueFromArray = function(bot) {
-  var tweetQueue = [],
+  bot = setArgDefault(bot, this, Bot);
+
+  var tweetQueue = bot.tweetQueue || [],
       prefix = bot.prefix || '',
       suffix = bot.suffix || '',
       contentPool = bot.contentPool;
@@ -190,25 +250,114 @@ Bot.prototype.tweetQueueFromArray = function(bot) {
   });
   
   return tweetQueue;
-}
+};
 
-Bot.prototype.getArtistTitlePair = function() {
-  var artist = randomFromArray(this.artists),
-      title = randomFromArray(this.songs[artist]);
+Bot.prototype.getArtistTitlePair = function(bot) {
+  bot = setArgDefault(bot, this, Bot);
+
+  var artist = randomFromArray(bot.artists),
+      title = randomFromArray(bot.songs[artist]);
   return {"artist": artist, "title": title};
+};
+
+Bot.prototype.getRandomWordsPromise = function(wordHandle, bot) {
+  bot = setArgDefault(bot, this, Bot);
+  var criteria = bot.words[wordHandle],
+      api_key = bot.wordnik.api_key,
+      url = "http://api.wordnik.com//v4/words.json/randomWords?" + criteria + "&api_key=" + api_key,
+      pool = wordHandle + 's',
+      rwDeferred = _.Deferred(),
+      randomWordPromise = rwDeferred.promise();
+      
+  request({
+    url: url
+  }, function (error, response, body) {
+    if (!error && response.statusCode === 200) {
+      rwDeferred.resolve(JSON.parse(body), pool);
+    }
+    else {
+      rwDeferred.reject(error);
+    }
+  });
+  
+  return randomWordPromise;
+};
+
+Bot.prototype.populateRandomWords = function(bot) {
+  bot = setArgDefault(bot, this, Bot);
+  
+  var w, 
+      words = bot.words;
+  
+  for (w in words) {
+    bot.getRandomWordsPromise(w, bot)
+    .then(function(result, pool) {
+      _.each(result, function(el, ind, arr) {
+        var word = el.word;
+        bot[pool][word] = word;
+      });
+      console.log(pool, ': ', JSON.stringify(bot[pool]));
+    });
+  }
+};
+
+Bot.prototype.getWordnikURLs = function(bot) {
+  bot = setArgDefault(bot, this, Bot);
+  var w,
+      words = bot.words,
+      api_key = bot.wordnik.api_key,
+      toReturn = {};
+      
+  for (w in words) {
+    toReturn[w] = "http://api.wordnik.com//v4/words.json/randomWords?" + words[w] + "&api_key=" + api_key;
+    console.log(w, 'url: ', toReturn[w]);
+  }
+  
+  return toReturn;
+};
+
+Bot.prototype.makeSnowclone = function(bot) {
+  bot = setArgDefault(bot, this, Bot);
+  var w,
+      forTemplate = {},
+      template = bot.template,
+      words = bot.words,
+      T = bot.T,
+      wordPool, aWord,
+      tweetContent = '';
+      
+  for (w in words) {
+    wordPool = bot[w + 's'];
+    aWord = randomFromArray(_.toArray(wordPool));
+    forTemplate[w] = aWord;
+    delete wordPool[aWord];
+  }
+
+  tweetContent = template(forTemplate);
+  postTweet(T, tweetContent);
+};
+
+Bot.prototype.getYoutubeURL = function(bot) {
+  bot = setArgDefault(bot, this, Bot);
+  var criteria = bot.criteria,
+      youtubeURL = 'http://gdata.youtube.com/feeds/api/videos?q=' + criteria +
+                   '&orderby=published&v=2&alt=json';
+                   
+  return youtubeURL;
 };
 
 // Retrieve page somewhere 1-41 from Flickr photos with particular tags and
 // CC or more liberal license, sorted by relevance:
-Bot.prototype.getFlickrURL = function (pageCount) {
-  if (typeof pageCount === 'undefined') {
-    pageCount = 41;
-  }
+Bot.prototype.getFlickrURL = function (bot, pageCount) {
+  bot = setArgDefault(bot, this, Bot);
+  pageCount = setArgDefault(pageCount, 41);
   
-  var randomPage =  Math.floor((Math.random() * pageCount) + 1),
+  var tags       =  bot.tags,
+      flickr_key =  bot.flickr.flickr_key,
+      randomPage =  Math.floor((Math.random() * pageCount) + 1),
       flickrURL  =  "http://api.flickr.com/services/rest/?method=flickr.photos.search&" +
-                    "api_key=" + this.flickr.flickr_key + "&" +
-                    "tags=" + this.tags + "&" +
+                    "api_key=" + flickr_key + "&" +
+                    "tags=" + tags + "&" +
                     "license=1%7C2%7C3%7C4%7C5%7C6%7C7%7C8&" +
                     "sort=relevance&" +
                     "safe_search=1&" +
@@ -220,14 +369,47 @@ Bot.prototype.getFlickrURL = function (pageCount) {
   return flickrURL;
 };
 
-Bot.prototype.secondFilter = function secondFilter (data) {
-  data = JSON.parse(data);
-  if (!(this instanceof Bot)) {
-    throw(new Error('this is not a Bot within secondFilter()!'));
-  }
+Bot.prototype.youtubeFilter = function youtubeFilter (bot) {
+  bot = setArgDefault(bot, this, Bot);
+  var youtubeURL = bot.getYoutubeURL();
+  
+  restclient.get(youtubeURL, function (data) {
+    data = JSON.parse(data);
+    
+    var res = data.feed.entry,
+        e, ee,
+        entry,
+        vidURL,
+        tweetContent,
+        queueMax = bot.queueMax,
+        inQueue = bot.inQueue,
+        tweetQueue = bot.tweetQueue;
+    
+    for (e = 0, ee = res.length; e < ee; e++) {
+      entry = res[e];
+      if (entry.title.$t.length < 117 && typeof inQueue[entry.id.$t] === 'undefined') {
+        vidURL = entry.link[0].href.substr(0,entry.link[0].href.indexOf('&')); //trim off the &feature=youtube_gdata param
+        tweetContent = entry.title.$t + ' ' + vidURL;
+        //console.log('Gonna push: ', tweetContent);
+        tweetQueue.push(tweetContent);
+        inQueue[entry.id.$t] = tweetContent;
+      }
+    }
+    
+    //console.log('tweetQueue length: ', bot.tweetQueue.length);
+    
+    //Keep our queue under a certain size, ditching oldest Tweets
+    if (tweetQueue.length > queueMax) {
+        tweetQueue = tweetQueue.slice(queueMax - 50);
+    }
+  });
+}
 
-  var bot = this,
-      T = bot.T,
+Bot.prototype.secondFilter = function secondFilter (data, bot) {
+  bot = setArgDefault(bot, this, Bot);
+  data = JSON.parse(data);
+
+  var T = bot.T,
       pivot = bot.pivot,
       firsts = bot.firsts,
       results = data.results,
@@ -323,24 +505,15 @@ Bot.prototype.secondFilter = function secondFilter (data) {
   //console.log(tweetContent.length);
 
   // tweet it!    
-
-  if (process.env['NODE_ENV'] === 'production') {
-    T.post('statuses/update', {
-      status: tweetContent
-    }, function (err, reply) {});
-  }
+  postTweet(T, tweetContent);
 };
 
 
-Bot.prototype.firstFilter = function firstFilter (data) {
-  // parse them from JSON into a javascript object called 'data'
+Bot.prototype.firstFilter = function firstFilter (data, bot) {
+  bot = setArgDefault(bot, this, Bot);
   data = JSON.parse(data);
-
-  if (!(this instanceof Bot)) {
-    throw(new Error('this is not a Bot within firstFilter()!'));
-  }
-  var bot = this,
-      results = data.results,
+  
+  var results = data.results,
       firsts = bot.firsts,
       pivot = bot.pivot,
       secondCriterion = bot.secondCriterion,
@@ -362,13 +535,10 @@ Bot.prototype.firstFilter = function firstFilter (data) {
   });
 };
 
+
+//Based on Darius K's @LatourSwag bot source
 Bot.prototype.makeTweetMash = function makeTweetMash(bot) {
-  if (typeof bot === 'undefined') {
-    bot = this;
-  }
-  if (!(bot instanceof Bot)) {
-    throw(new Error('this is not a Bot within makeTweetMash()!'));
-  }
+  bot = setArgDefault(bot, this, Bot);
   
   // get the swag tweets, then the latour tweets, then mash together. 
   restclient.get(bot.firstCriterion, function(data) {
@@ -421,19 +591,17 @@ function findRhymes(fullLyric) {
       nonRhymes     = [],
       wordsToRhyme  = [],
       tweetLyric    = '',
-      cleanupRE     = /[\[\}].+?[\]\}]|[\[\(\{]?(x\d+|\d+x)[\)\]\}]?|&.+?;/gi;
+      cleanupRE     = /[\[\}].+?[\]\}]|[\[\(\{]?(x\d+|\d+x)[\)\]\}]?|&.+?;|^\(|\)$/gi;
 
   for (; l<ll; l++) {
     line = fullLyric[l].replace(cleanupRE,'').trim();
-    if (line.length < 2) {
-      continue;                                                                             //No content, move along
-    }
-    
-    //Get last word in line as Word object
-    lastWord = line.match(/[\S]+$/)[0].replace(/\W/g,'').toUpperCase();
-    lastWord = Word.words[lastWord] || new Word(lastWord);
 
-    if (line[line.length - 1] != ':' && line[line.length - 1] != ']') {                     //Try to omit lines like "CHORUS:" and "[x3]"
+    if (line.length > 1 && line[line.length - 1] != ':' && line[line.length - 1] != ']') {  //Try to omit lines like "CHORUS:" and "[x3]"
+    
+      //Get last word in line as Word object
+      lastWord = line.match(/[\S]+$/)[0].replace(/\W/g,'').toUpperCase();
+      lastWord = Word.words[lastWord] || new Word(lastWord);
+    
       if (wordsToRhyme.length === 0) {                                                      //If first line in a new tweetable cluster:
         tweetLyric = line;                                                                       //|-set this line as the root for a new potential tweet
         wordsToRhyme = [lastWord];                                                          //|-seed grouping of words to check for rhyme with last word
@@ -442,26 +610,26 @@ function findRhymes(fullLyric) {
         if (tweetLyric.length + line.length + 3 <= 117) {                                        //|-If existing + this + link will fit in a tweet:
             tweetLyric += ' / ' + line;                                                          //|-Add this line to the potential tweet body
 
-            if (l+1 < ll && tweetLyric.length + fullLyric[l+1].length + 3 > 117) {               //|---If this line will be the last in the group
-              wordsToRhyme.push(lastWord);                                                  //|-----Add its last word into the rhyme pool
+            if (l+1 < ll && tweetLyric.length + fullLyric[l+1].length + 3 > 117) {
+              wordsToRhyme.push(lastWord);
               (wordsToRhyme.length > 1 && isRhymeInArray(wordsToRhyme)) ? theRhymes.push(tweetLyric) : nonRhymes.push(tweetLyric);
-              tweetLyric = line;                                                                 //|-----set this line as the root for a new potential tweet
-              wordsToRhyme = [lastWord];                                                    //|-----seed grouping of words to check for rhyme with last word
-            } 
-            else {                                                                        //|---Otherwise...
-              wordsToRhyme.push(lastWord);                                                  //|-----Add last word to rhyme pool and move on
+              tweetLyric = line;
+              wordsToRhyme = [lastWord];
+            }
+            else {
+              wordsToRhyme.push(lastWord);
             }
         } 
         else {                                                                            //|-If existing + this + link will be too long to tweet
           (wordsToRhyme.length > 1 && isRhymeInArray(wordsToRhyme)) ? theRhymes.push(tweetLyric) : nonRhymes.push(tweetLyric);
-          tweetLyric = line;                                                                     //|--set this line as the root for a new potential tweet
-          wordsToRhyme = [lastWord];                                                        //|--seed grouping of words to check for rhyme with last word
+          tweetLyric = line;
+          wordsToRhyme = [lastWord];
         }
       }
     }
   }
 
-  //Return array of chunks with tweetLyrics, or all the chunks found if none have known tweetLyrics.
+  //Return array of chunks with rhymes, or all the chunks found if none have known rhymes.
   if (theRhymes.length > 0) {
     return theRhymes;
   } 
@@ -472,24 +640,19 @@ function findRhymes(fullLyric) {
 
 //Search 100 recent tweets for those with certain number of syllables
 Bot.prototype.syllableFilter = function(bot) {
-  if (typeof bot === 'undefined') {
-    bot = this;
-  }
-  if (!(bot instanceof Bot)) {
-    throw(new Error('this is not a Bot within syllableFilter()!'));
-  }
+  bot = setArgDefault(bot, this, Bot);
 
-    var T = bot.T,
-        tweetQueue = bot.tweetQueue,
-        queueMax = bot.queueMax,
-        prefix = bot.prefix || '',
-        suffix = bot.suffix || '',
-        targetSyllables = bot.targetSyllables,
-        searchParams  = { 
-          "q": 'lang:en', 
-          "result-type": 'recent', 
-          "count": 100, 
-        };
+  var T = bot.T,
+      tweetQueue = bot.tweetQueue,
+      queueMax = bot.queueMax,
+      prefix = bot.prefix || '',
+      suffix = bot.suffix || '',
+      targetSyllables = bot.targetSyllables,
+      searchParams  = { 
+        "q": 'lang:en', 
+        "result-type": 'recent', 
+        "count": 100, 
+      };
 
   T.get('search/tweets', searchParams, function(err, reply) {
     if (err) {console.log(err);}
@@ -531,7 +694,7 @@ Bot.prototype.syllableFilter = function(bot) {
 
         if (sCount === targetSyllables) {
           //console.log('We got one! : ', text);
-          tweetContent = prefix + text + suffix;
+          tweetContent = ent.decode(prefix + text + suffix);
           tweetQueue.push({status: tweetContent, in_reply_to_status_id: t.id});
         }
       }
@@ -546,12 +709,7 @@ Bot.prototype.syllableFilter = function(bot) {
 
 //Send Tweet from Bot's prepared array
 Bot.prototype.tweetFromQueue = function(bot, isRandom) {
-  if (typeof bot === 'undefined' && this instanceof Bot) {
-    bot = this;
-  }
-  if (!(bot instanceof Bot)) {
-    throw(new Error('this is not a Bot within tweetFromQueue()!'));
-  }
+  bot = setArgDefault(bot, this, Bot);
   
   var T = bot.T,
       tweetQueue = bot.tweetQueue,
@@ -569,25 +727,13 @@ Bot.prototype.tweetFromQueue = function(bot, isRandom) {
       return;
   }
   else {
-    if (process.env['NODE_ENV'] === 'production') {
-      T.post('statuses/update', queuedTweet, function(err, reply) {
-        if (err) {
-          console.log(err); //Should actually catch this.
-        }
-      });
-    }
-    console.log(queuedTweet.status);
+    postTweet(T, queuedTweet);
   }
 };
 
 //Main function for bots of type 'lyrpictweet'
 Bot.prototype.makeLyrpicTweet = function(bot) {
-  if (typeof bot === 'undefined' && this instanceof Bot) {
-    bot = this;
-  }
-  if (!(bot instanceof Bot)) {
-    throw(new Error('this is not a Bot within makeLyrpicTweet()!'));
-  }
+  bot = setArgDefault(bot, this, Bot);
 
   var T = bot.T,
       tweetContent = '',
@@ -597,7 +743,7 @@ Bot.prototype.makeLyrpicTweet = function(bot) {
   console.log(artistAndTitle);
 
   restclient.get(yql,function(data){
-    if(data.query.results && data.query.results.GetLyricResult && data.query.results.GetLyricResult.Lyric){
+    if(data.query && data.query.results && data.query.results.GetLyricResult){
       var rhymes = [],
           flickrURL,
           picURL = '',
@@ -622,16 +768,9 @@ Bot.prototype.makeLyrpicTweet = function(bot) {
 
         //append the Flickr URL to our tweet and output to log for reference
         tweetContent += ' ' + picURL;
-        console.log(tweetContent);
 
         //Only tweet if in production environment
-        if (process.env.NODE_ENV == 'production') {
-          T.post('statuses/update', { status: tweetContent}, function(err, reply) {
-            console.log("error: " + err);
-            console.log("reply: " + reply);
-            console.log('...\n\n');
-            });
-        }
+        postTweet(T, tweetContent);
       }, "json");
     }
     else {
