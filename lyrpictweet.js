@@ -14,6 +14,7 @@ Currently used for Twitter bots @GCatPix and @CWDogPix.
 */
 
 var CONFIG      = require('./config.js'),
+    querystring = require('querystring'),
     _           = require('lodash'),
     I           = require('inflection'),
     restclient  = require('node-restclient'),
@@ -262,9 +263,9 @@ Bot.prototype.getArtistTitlePair = function(bot) {
 
 Bot.prototype.getRandomWordsPromise = function(wordHandle, bot) {
   bot = setArgDefault(bot, this, Bot);
-  var criteria = bot.words[wordHandle],
+  var reqParams = querystring.stringify(bot.words[wordHandle]),
       api_key = bot.wordnik.api_key,
-      url = "http://api.wordnik.com//v4/words.json/randomWords?" + criteria + "&api_key=" + api_key,
+      url = "http://api.wordnik.com//v4/words.json/randomWords?" + reqParams + "&api_key=" + api_key,
       pool = wordHandle + 's',
       rwDeferred = _.Deferred(),
       randomWordPromise = rwDeferred.promise();
