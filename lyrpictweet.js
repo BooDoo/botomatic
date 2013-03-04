@@ -14,16 +14,16 @@ Currently used for Twitter bots @GCatPix and @CWDogPix.
 */
 
 var CONFIG      = require('./config.js'),
-    _           = require('lodash'),
-    I           = require('inflection'),
+    //_           = require('lodash'),
+    //I           = require('inflection'),
     express     = require('express'),
     app         = express(),
-    CMUDict     = require('cmudict').CMUDict,
+    Bot         = require('./lib/Bot.js').Bot;
+    //CMUDict     = require('cmudict').CMUDict,
     //Word        = require('./lib/Word.js').Word,
-    Bot         = require('./lib/Bot.js').Bot,
-    cmudict     = new CMUDict();
+    //cmudict     = new CMUDict();
     
-    _.mixin(require('underscore.deferred'));
+    //_.mixin(require('underscore.deferred'));
 
 // This is present for deployment to nodejitsu, which requires some response to http call.
 app.get('/', function(req, res){
@@ -32,7 +32,7 @@ app.get('/', function(req, res){
 app.listen(process.env.PORT || 3000);
 
 //The cmudict module takes ~2sec on initial query; let's get that out of the way now.
-cmudict.get('initialize');
+//cmudict.get('initialize');
 
 //Every 12 hours, dump a list of words that CMUDict couldn't parse to the log and reset the list
 /*
