@@ -139,7 +139,6 @@ var credentials = {
   },
 
   bots = {
-
     rapcats:
     {
       type:                 "lyrpictweet",
@@ -196,7 +195,7 @@ var credentials = {
       //suffix:           '',
       interval:         process.env.NODE_ENV === 'production' ? 60000*60*24 : 30000
     },
-
+    
     mlg420:
     {
       type:             "youtube",
