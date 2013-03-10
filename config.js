@@ -142,7 +142,6 @@ var credentials = {
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*10 : 30000,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000
     },
-
     xyisx:
     {
       type:             "snowclone",
