@@ -1,4 +1,3 @@
-{
   "name": "gcatpix",
   "description": "Get a rhyme; get a picture; tweet it!",
   "version": "0.1.1",
@@ -29,7 +28,7 @@
     "ent": "0.0.x",
     "lodash": "1.0.x",
     "underscore.deferred": "0.4.x",
-    "request": "2.14.x",
+    "request": "2.14.x"
   },
   "engines": {
     "node": "0.8.x",
