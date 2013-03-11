@@ -1,7 +1,7 @@
 {
   "name": "gcatpix",
   "description": "Get a rhyme; get a picture; tweet it!",
-  "version": "0.0.87",
+  "version": "0.1.0",
   "homepage": "https://github.com/BooDoo/lyrpictweet",
   "author": {
     "name": "Joel McCoy",
