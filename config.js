@@ -62,7 +62,7 @@ var credentials = {
       twitter:              credentials.twitter_gcatpix,
       flickr:               credentials.flickr_boodoo,
       tags:                 "cat%2C+-caterpillar",
-      songs:                "rap",
+      lyricGenre:           "rap",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
     },
     
@@ -73,7 +73,7 @@ var credentials = {
       twitter:              credentials.twitter_cwdogpix,
       flickr:               credentials.flickr_boodoo,
       tags:                 "dog",
-      songs:                "country",
+      lyricGenre:           "country",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
     },
     
@@ -94,7 +94,7 @@ var credentials = {
     {
       type:                 "tweetmash",
       handle:               "latourswag",
-      twitter:              credentials.twitter_latour,
+      twitter:              credentials.twitter_xyisx,
       criteria:             ["#swag and", "from:latourbot"],
       pivot:                " and ",
       //searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*10 : 30000,
@@ -102,58 +102,58 @@ var credentials = {
     },
     
     commentsreminder: {
-      type:             "reminder",
-      handle:           "commentsreminder",
-      twitter:          credentials.twitter_avoidComments,
-      contentPool:      contentPools.avoidComments,
-      isRandom:         true,
-      //prefix:           '',
-      //suffix:           '',
-      interval:         process.env.NODE_ENV === 'production' ? 60000*60*24 : 30000
+      type:                 "reminder",
+      handle:               "commentsreminder",
+      twitter:              credentials.twitter_xyisx,
+      contentPool:          ['Message 1', 'Message 2', 'Message 3', 'Message 4', 'Message 5', 'Message 6', 'Message 7', 'Message 8'],
+      isRandom:             true,
+      //prefix:             '',
+      //suffix:             '',
+      interval:             process.env.NODE_ENV === 'production' ? 60000*60*24 : 30000
     },
     
     mlg420:
     {
-      type:             "youtube",
-      handle:           "mlg420",
-      twitter:          credentials.twitter_mlg420,
-      criteria:         'mlg+420',
-      //contentPool:      ,
-      //isRandom:         true,
-      searchInterval:   process.env.NODE_ENV === 'production' ? 60000*60*4 : 30000,
-      interval:         process.env.NODE_ENV === 'production' ? 60000*60*8 : 60000
+      type:                 "youtube",
+      handle:               "mlg420",
+      twitter:              credentials.twitter_xyisx,
+      criteria:             'mlg+420',
+      //contentPool:        ,
+      //isRandom:           true,
+      searchInterval:       process.env.NODE_ENV === 'production' ? 60000*60*4 : 30000,
+      interval:             process.env.NODE_ENV === 'production' ? 60000*60*8 : 60000
     },
     
     xyisx:
     {
-      type:             "snowclone",
-      handle:           "xyisx",
-      twitter:          credentials.twitter_xyisx,
-      wordnik:          credentials.wordnik_boodoo,
-      format:           "<%= word1 %> <%= word2 %> is <%= word1 %>",
+      type:                 "snowclone",
+      handle:               "xyisx",
+      twitter:              credentials.twitter_xyisx,
+      wordnik:              credentials.wordnik_boodoo,
+      format:               "<%= word1 %> <%= word2 %> is <%= word1 %>",
       words:            
       {
-        word1:
-        {
-                        includePartOfSpeech: "adjective",
-                        excludePartOfSpeech: "verb-intransitive",
-                        hasDictionaryDef: "true",
-                        limit: 10,
-                        minDictionaryCount: 10,
-                        minCorpusCount: 5000
-        },
-        word2:
-        {
-                        includePartOfSpeech: "noun",
-                        excludePartOfSpeech: "noun-plural,pronoun,noun-posessive,proper-noun-posessive,suffix,idiom,affix",
-                        hasDictionaryDef: false,
-                        limit: 10,
-                        minDictionaryCount: 10, 
-                        minCorpusCount: 5000
-        }
+                    word1:
+                          {
+                            includePartOfSpeech: "adjective",
+                            excludePartOfSpeech: "verb-intransitive",
+                            hasDictionaryDef: "true",
+                            limit: 10,
+                            minDictionaryCount: 10,
+                            minCorpusCount: 5000
+                          },
+                    word2:
+                          {
+                            includePartOfSpeech: "noun",
+                            excludePartOfSpeech: "noun-plural,pronoun,noun-posessive,proper-noun-posessive,suffix,idiom,affix",
+                            hasDictionaryDef: false,
+                            limit: 10,
+                            minDictionaryCount: 10, 
+                            minCorpusCount: 5000
+                          }
       },
-      searchInterval:   process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
-      interval:         process.env['NODE_ENV'] === 'production' ? 60000*15   : 30000
+      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*15   : 30000
     }
   };
 
