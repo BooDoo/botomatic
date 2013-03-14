@@ -40,6 +40,15 @@ var credentials = {
       access_token_secret:  process.env['XYX_TWITTER_ACCESS_TOKEN_SECRET']      
     },
 
+    twitter_lyrpic:
+    {
+      service:              "twitter",
+      consumer_key:         process.env['LYRPIC_TWITTER_CONSUMER_KEY'],
+      consumer_secret:      process.env['LYRPIC_TWITTER_CONSUMER_SECRET'],
+      access_token:         process.env['LYRPIC_TWITTER_ACCESS_TOKEN'],
+      access_token_secret:  process.env['LYRPIC_TWITTER_ACCESS_TOKEN_SECRET']      
+    },
+
     flickr_boodoo:
     {
       service:              "flickr",
@@ -73,10 +82,21 @@ var credentials = {
       twitter:              credentials.twitter_cwdogpix,
       flickr:               credentials.flickr_boodoo,
       tags:                 "dog",
+      lyricGenre:           "country",
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
+    },
+
+    lyrpic:
+    {
+      type:                 "lyrpictweet",
+      handle:               "lyrpic",
+      twitter:              credentials.twitter_lyrpic,
+      flickr:               credentials.flickr_boodoo,
+      tags:                 "",
       lyricGenre:           "all",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
     },
-    
+
     camptownraces:
     {
       type:                 "syllablecount",
@@ -89,7 +109,39 @@ var credentials = {
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*10 : 30000,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000
     },
-    
+
+    xyisx:
+    {
+      type:                 "snowclone",
+      handle:               "xyisx",
+      twitter:              credentials.twitter_xyisx,
+      wordnik:              credentials.wordnik_boodoo,
+      format:               "<%= word1 %> <%= word2 %> is <%= word1 %>",
+      words:            
+      {
+                    word1:
+                          {
+                            includePartOfSpeech: "adjective",
+                            excludePartOfSpeech: "verb-intransitive",
+                            hasDictionaryDef: "true",
+                            limit: 10,
+                            minDictionaryCount: 10,
+                            minCorpusCount: 5000
+                          },
+                    word2:
+                          {
+                            includePartOfSpeech: "noun",
+                            excludePartOfSpeech: "noun-plural,pronoun,noun-posessive,proper-noun-posessive,suffix,idiom,affix",
+                            hasDictionaryDef: false,
+                            limit: 10,
+                            minDictionaryCount: 10, 
+                            minCorpusCount: 5000
+                          }
+      },
+      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*15   : 30000
+    },
+
     latourswag:
     {
       type:                 "tweetmash",
@@ -122,38 +174,6 @@ var credentials = {
       //isRandom:           true,
       searchInterval:       process.env.NODE_ENV === 'production' ? 60000*60*4 : 30000,
       interval:             process.env.NODE_ENV === 'production' ? 60000*60*8 : 60000
-    },
-    
-    xyisx:
-    {
-      type:                 "snowclone",
-      handle:               "xyisx",
-      twitter:              credentials.twitter_xyisx,
-      wordnik:              credentials.wordnik_boodoo,
-      format:               "<%= word1 %> <%= word2 %> is <%= word1 %>",
-      words:            
-      {
-                    word1:
-                          {
-                            includePartOfSpeech: "adjective",
-                            excludePartOfSpeech: "verb-intransitive",
-                            hasDictionaryDef: "true",
-                            limit: 10,
-                            minDictionaryCount: 10,
-                            minCorpusCount: 5000
-                          },
-                    word2:
-                          {
-                            includePartOfSpeech: "noun",
-                            excludePartOfSpeech: "noun-plural,pronoun,noun-posessive,proper-noun-posessive,suffix,idiom,affix",
-                            hasDictionaryDef: false,
-                            limit: 10,
-                            minDictionaryCount: 10, 
-                            minCorpusCount: 5000
-                          }
-      },
-      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*15   : 30000
     }
   };
 
