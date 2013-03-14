@@ -68,10 +68,11 @@ var credentials = {
     {
       type:                 "lyrpictweet",
       handle:               "rapcats",
+      format:               "<%= lyric %> <%= flickrURL %>",
       twitter:              credentials.twitter_gcatpix,
       flickr:               credentials.flickr_boodoo,
       tags:                 "cat%2C+-caterpillar",
-      lyricGenre:           "rap",
+      lyricType:            "rap",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
     },
     
@@ -79,10 +80,11 @@ var credentials = {
     {
       type:                 "lyrpictweet",
       handle:               "countrydogs",
+      format:               "<%= lyric %> <%= flickrURL %>",
       twitter:              credentials.twitter_cwdogpix,
       flickr:               credentials.flickr_boodoo,
       tags:                 "dog",
-      lyricGenre:           "country",
+      lyricType:            "country",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
     },
 
@@ -90,10 +92,11 @@ var credentials = {
     {
       type:                 "lyrpictweet",
       handle:               "lyrpic",
+      format:               "<%= lyric %> <%= flickrURL %>",
       twitter:              credentials.twitter_lyrpic,
       flickr:               credentials.flickr_boodoo,
       tags:                 "",
-      lyricGenre:           "all",
+      lyricType:            "all",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
     }/*,
 
@@ -101,6 +104,7 @@ var credentials = {
     {
       type:                 "syllablecount",
       handle:               "camptownraces",
+      format:               "<%= prefix %><%= target %><%= suffix>",
       twitter:              credentials.twitter_ct_races,
       targetSyllables:      7,
       //prefix:             '',
@@ -114,9 +118,9 @@ var credentials = {
     {
       type:                 "snowclone",
       handle:               "xyisx",
+      format:               "<%= word1 %> <%= word2 %> is <%= word1 %>",
       twitter:              credentials.twitter_xyisx,
       wordnik:              credentials.wordnik_boodoo,
-      format:               "<%= word1 %> <%= word2 %> is <%= word1 %>",
       words:            
       {
                     word1:
@@ -146,6 +150,7 @@ var credentials = {
     {
       type:                 "tweetmash",
       handle:               "latourswag",
+      format:               "<%= first %><%= pivot %><%= second %>",
       twitter:              credentials.twitter_xyisx,
       criteria:             ["#swag and", "from:latourbot"],
       pivot:                " and ",
@@ -156,6 +161,7 @@ var credentials = {
     commentsreminder: {
       type:                 "reminder",
       handle:               "commentsreminder",
+      format:               "<%= content %>",
       twitter:              credentials.twitter_xyisx,
       contentPool:          ['Message 1', 'Message 2', 'Message 3', 'Message 4', 'Message 5', 'Message 6', 'Message 7', 'Message 8'],
       isRandom:             true,
@@ -168,6 +174,7 @@ var credentials = {
     {
       type:                 "youtube",
       handle:               "mlg420",
+      format:               "<%= vidTitle %> <%= vidURL %>"
       twitter:              credentials.twitter_xyisx,
       criteria:             'mlg+420',
       //contentPool:        ,
