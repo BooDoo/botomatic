@@ -73,7 +73,7 @@ var credentials = {
       twitter:              credentials.twitter_cwdogpix,
       flickr:               credentials.flickr_boodoo,
       tags:                 "dog",
-      lyricGenre:           "country",
+      lyricGenre:           "all",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
     },
     
