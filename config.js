@@ -68,7 +68,7 @@ var credentials = {
     {
       type:                 "lyrpictweet",
       handle:               "rapcats",
-      format:               "<%= lyric %> <%= flickrURL %>",
+      format:               "<%= lyricSegment %> <%= photoURL %>",
       twitter:              credentials.twitter_gcatpix,
       flickr:               credentials.flickr_boodoo,
       tags:                 "cat%2C+-caterpillar",
@@ -80,19 +80,19 @@ var credentials = {
     {
       type:                 "lyrpictweet",
       handle:               "countrydogs",
-      format:               "<%= lyric %> <%= flickrURL %>",
+      format:               "<%= lyricSegment %> <%= photoURL %>",
       twitter:              credentials.twitter_cwdogpix,
       flickr:               credentials.flickr_boodoo,
       tags:                 "dog",
       lyricType:            "country",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
-    },
+    }/*,
 
     lyrpic:
     {
       type:                 "lyrpictweet",
       handle:               "lyrpic",
-      format:               "<%= lyric %> <%= flickrURL %>",
+      format:               "<%= lyricSegment %> <%= photoURL %>",
       twitter:              credentials.twitter_lyrpic,
       flickr:               credentials.flickr_boodoo,
       tags:                 "",
