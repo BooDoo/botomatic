@@ -24,12 +24,11 @@
   "dependencies": {
     "express": "3.0.x",
     "twit": "1.0.x",
-    "node-restclient": "0.0.x",
     "cmudict": "1.0.x",
-    "ent": "0.0.x",
     "lodash": "1.0.x",
     "underscore.deferred": "0.4.x",
-    "request": "2.14.x"
+    "request": "2.14.x",
+    "querystring": "1.1.x"
   },
   "engines": {
     "node": "0.8.x",

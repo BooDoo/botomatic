@@ -150,7 +150,7 @@ var credentials = {
     {
       type:                 "tweetmash",
       handle:               "latourswag",
-      format:               "<%= first %><%= pivot %><%= second %>",
+      format:               "<%= pre %><%= pivot %><%= post %>",
       twitter:              credentials.twitter_xyisx,
       criteria:             ["#swag and", "from:latourbot"],
       pivot:                " and ",
