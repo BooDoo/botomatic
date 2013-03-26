@@ -64,7 +64,7 @@ var credentials = {
   },
 
   bots = {
-    rapcats:
+    /*rapcats:
     {
       type:                 "lyrpictweet",
       handle:               "rapcats",
@@ -86,7 +86,7 @@ var credentials = {
       tags:                 "dog",
       lyricType:            "country",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
-    }/*,
+    },
 
     lyrpic:
     {
@@ -98,7 +98,7 @@ var credentials = {
       tags:                 "",
       lyricType:            "all",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
-    }/*,
+    },
 
     camptownraces:
     {
@@ -145,7 +145,7 @@ var credentials = {
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15   : 30000
     },
-
+*/
     latourswag:
     {
       type:                 "tweetmash",
@@ -154,10 +154,10 @@ var credentials = {
       twitter:              credentials.twitter_xyisx,
       criteria:             ["#swag and", "from:latourbot"],
       pivot:                " and ",
-      //searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*10 : 30000,
+      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*30 : 60000,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000
-    },
-    
+    }//,
+/*    
     commentsreminder: {
       type:                 "reminder",
       handle:               "commentsreminder",

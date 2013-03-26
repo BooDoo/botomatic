@@ -16,7 +16,7 @@ Currently used for Twitter bots @GCatPix and @CWDogPix.
 var CONFIG      = require('./config.js'),
     express     = require('express'),
     app         = express(),
-    Bot         = require('./lib/Bot.js').Bot;
+    Bot         = require('./lib/Bot.js');
 
 // This is present for deployment to nodejitsu, which requires some response to http call.
 app.get('/', function(req, res){
