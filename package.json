@@ -1,8 +1,8 @@
 {
-  "name": "gcatpix",
-  "description": "Get a rhyme; get a picture; tweet it!",
-  "version": "0.1.1",
-  "homepage": "https://github.com/BooDoo/lyrpictweet",
+  "name": "botomatic",
+  "description": "Construct multiple Twitter bots using a simple config file",
+  "version": "0.0.2",
+  "homepage": "https://github.com/BooDoo/botomatic",
   "author": {
     "name": "Joel McCoy",
     "email": "joelmccoy@gmail.com",
@@ -10,15 +10,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/BooDoo/lyrpictweet"
+    "url": "git://github.com/BooDoo/botomatic"
   },
   "bugs": {
-    "url": "https://github.com/BooDoo/lyrpictweet/issues"
+    "url": "https://github.com/BooDoo/botomatic/issues"
   },
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://github.com/BooDoo/lyrpictweet/blob/master/LICENSE"
+      "url": "https://github.com/BooDoo/botomatic/blob/master/LICENSE"
     }
   ],
   "dependencies": {
@@ -27,15 +27,14 @@
     "cmudict": "1.0.x",
     "lodash": "1.0.x",
     "underscore.deferred": "0.4.x",
-    "request": "2.14.x",
-    "querystring": "1.1.x"
+    "request": "2.14.x"
   },
   "engines": {
     "node": "0.8.x",
     "npm": "1.1.x"
   },
-  "subdomain": "gcatpix",
+  "subdomain": "botomatic",
   "scripts": {
-    "start": "lyrpictweet.js"
+    "start": "botomatic.js"
   }
 }

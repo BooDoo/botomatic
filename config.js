@@ -1,7 +1,6 @@
- //Three objects:
-//bots - configuration for each lyric/picture pairing robot
-//songSets - hash of {artist: [title1, title2], ...} to generate artist/title pair for song look-up
+//Two objects:
 //credentials - API keys/secrets
+//bots - configuration for each lyric/picture pairing robot
 
 var credentials = {
     twitter_gcatpix : 
@@ -64,7 +63,7 @@ var credentials = {
   },
 
   bots = {
-    /*rapcats:
+    rapcats:
     {
       type:                 "lyrpictweet",
       handle:               "rapcats",
@@ -87,7 +86,7 @@ var credentials = {
       lyricType:            "country",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
     },
-
+/*
     lyrpic:
     {
       type:                 "lyrpictweet",
@@ -99,7 +98,7 @@ var credentials = {
       lyricType:            "all",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
     },
-
+*/
     camptownraces:
     {
       type:                 "syllablecount",
@@ -145,7 +144,7 @@ var credentials = {
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15   : 30000
     },
-*/
+
     latourswag:
     {
       type:                 "tweetmash",
@@ -156,8 +155,8 @@ var credentials = {
       pivot:                " and ",
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*30 : 60000,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000
-    }//,
-/*    
+    },
+    
     commentsreminder: {
       type:                 "reminder",
       handle:               "commentsreminder",
@@ -174,14 +173,14 @@ var credentials = {
     {
       type:                 "youtube",
       handle:               "mlg420",
-      format:               "<%= vidTitle %> <%= vidURL %>"
+      format:               "<%= vidTitle %> <%= vidURL %>",
       twitter:              credentials.twitter_xyisx,
       criteria:             'mlg+420',
       //contentPool:        ,
       //isRandom:           true,
       searchInterval:       process.env.NODE_ENV === 'production' ? 60000*60*4 : 30000,
       interval:             process.env.NODE_ENV === 'production' ? 60000*60*8 : 60000
-    }*/
+    }
   };
 
 module.exports.credentials = credentials;
