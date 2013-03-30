@@ -11,7 +11,7 @@ Currently used for Twitter bots:
 [@xyisx_bot](http://twitter.com/xyisx_bot)
 
 
-Phonemes for rhyming and syllable counting are taken from the CMU Pronouncing Dictionary, made avaiable as [node-cmudict](https://github.com/nathanielksmith/node-cmudict) by Nathaniel K Smith.
+Phonemes for rhyming and syllable counting are taken from the CMU Pronouncing Dictionary, made available as [node-cmudict](https://github.com/nathanielksmith/node-cmudict) by Nathaniel K Smith.
 
 [express](https://github.com/visionmedia/express) is used as a placeholder server for fielding HTTP requests. (required by NodeJitsu)
 
