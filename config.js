@@ -145,6 +145,18 @@ var credentials = {
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15   : 30000
     },
 
+    latourandorder:
+    {
+      type:                 "latourandorder",
+      handle:               "latourandorder",
+      format:               "<%= pre %> <%= post %>",
+      twitter:              credentials.twitter_xyisx,
+      criteria:             [], //unused at present
+      pivot:                '', //also unused
+      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 60000,
+    },
+
     latourswag:
     {
       type:                 "tweetmash",
