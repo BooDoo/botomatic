@@ -95,7 +95,7 @@ var credentials = {
       lyricType:            "country",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
     },
-
+/*
     lyrpic:
     {
       type:                 "lyrpictweet",
@@ -107,7 +107,7 @@ var credentials = {
       lyricType:            "all",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
     },
-
+*/
     camptownraces:
     {
       type:                 "syllablecount",
