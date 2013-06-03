@@ -3,7 +3,7 @@
 //bots - configuration for each lyric/picture pairing robot
 
 var credentials = {
-    twitter_gcatpix : 
+    twitter_gcatpix :
     {
       service:              "twitter",
       consumer_key:         process.env['CAT_TWITTER_CONSUMER_KEY'],
@@ -11,7 +11,7 @@ var credentials = {
       access_token:         process.env['CAT_TWITTER_ACCESS_TOKEN'],
       access_token_secret:  process.env['CAT_TWITTER_ACCESS_TOKEN_SECRET']
     },
-   
+
     twitter_cwdogpix:
     {
       service:              "twitter",
@@ -36,7 +36,7 @@ var credentials = {
       consumer_key:         process.env['XYX_TWITTER_CONSUMER_KEY'],
       consumer_secret:      process.env['XYX_TWITTER_CONSUMER_SECRET'],
       access_token:         process.env['XYX_TWITTER_ACCESS_TOKEN'],
-      access_token_secret:  process.env['XYX_TWITTER_ACCESS_TOKEN_SECRET']      
+      access_token_secret:  process.env['XYX_TWITTER_ACCESS_TOKEN_SECRET']
     },
 
     twitter_lyrpic:
@@ -45,7 +45,7 @@ var credentials = {
       consumer_key:         process.env['LYRPIC_TWITTER_CONSUMER_KEY'],
       consumer_secret:      process.env['LYRPIC_TWITTER_CONSUMER_SECRET'],
       access_token:         process.env['LYRPIC_TWITTER_ACCESS_TOKEN'],
-      access_token_secret:  process.env['LYRPIC_TWITTER_ACCESS_TOKEN_SECRET']      
+      access_token_secret:  process.env['LYRPIC_TWITTER_ACCESS_TOKEN_SECRET']
     },
 
     flickr_boodoo:
@@ -54,7 +54,7 @@ var credentials = {
       flickr_key:           process.env['BOODOO_FLICKR_KEY'],
       flickr_secret:        process.env['BOODOO_FLICKR_SECRET']
     },
-    
+
     wordnik_boodoo:
     {
       service:              "wordnik",
@@ -74,7 +74,7 @@ var credentials = {
       lyricType:            "rap",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
     },
-    
+
     countrydogs:
     {
       type:                 "lyrpictweet",
@@ -120,7 +120,7 @@ var credentials = {
       format:               "<%= word1 %> <%= word2 %> is <%= word1 %>",
       twitter:              credentials.twitter_xyisx,
       wordnik:              credentials.wordnik_boodoo,
-      words:            
+      words:
       {
                     word1:
                           {
@@ -137,7 +137,7 @@ var credentials = {
                             excludePartOfSpeech: "noun-plural,pronoun,noun-posessive,proper-noun-posessive,suffix,idiom,affix",
                             hasDictionaryDef: false,
                             limit: 10,
-                            minDictionaryCount: 10, 
+                            minDictionaryCount: 10,
                             minCorpusCount: 5000
                           }
       },
@@ -153,6 +153,8 @@ var credentials = {
       twitter:              credentials.twitter_xyisx,
       criteria:             [], //unused at present
       pivot:                '', //also unused
+      prioritySource:       1,
+      preSource:            0,
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 60000,
     },
@@ -168,7 +170,7 @@ var credentials = {
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*30 : 60000,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000
     },
-    
+
     commentsreminder: {
       type:                 "reminder",
       handle:               "commentsreminder",
@@ -180,7 +182,7 @@ var credentials = {
       //suffix:             '',
       interval:             process.env.NODE_ENV === 'production' ? 60000*60*24 : 30000
     },
-    
+
     mlg420:
     {
       type:                 "youtube",
