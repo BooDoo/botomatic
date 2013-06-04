@@ -160,6 +160,8 @@ var credentials = {
       handle:               "latourandorder",
       format:               "<%= pre %> <%= post %>",
       twitter:              credentials.twitter_latour,
+      prioritySource:       1,
+      preSource:            1,
       criteria:             [], //unused at present
       pivot:                '', //also unused
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
