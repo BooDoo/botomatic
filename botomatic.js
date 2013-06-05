@@ -25,7 +25,7 @@ app.use(express.session());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'www', 'public')));
 
-// This is present for deployment to nodejitsu, which requires some response to http call.
+//Some junk for someone visiting the base url
 app.get('/', function(req, res){
     res.send('IGNORE ME.<br /><br /><a href="http://github.com/BooDoo/botomatic/tree/gcatpix">I am botomatic</a>');
     //res.send(JSON.stringify(_.keys(Bot.bots),null,2));
@@ -35,58 +35,46 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
+// Dashboard listing running bots by name
 app.get('/status/', function(req, res) {
                 status.index.call(this, req, res, _.keys(Bot.bots));
              }
 );
+
+// Listing of properties for a particular active bot
 app.get('/status/:handle/', function(req, res) {
-                      var handle = req.params.handle
-                      status.index.call(this, req, res, _.keys(Bot.bots[handle]));
+                      var handle    = req.params.handle,
+                          bot       = Bot.bots[handle],
+                          keys      = _.keys(bot),
+                          hideDash  = bot.hideDash;
+
+                      //hideArgs.unshift(keys);
+                      keys = _.filter(keys, function(v, k, o) {
+                        return (_.contains(hideDash, k) === false && _.isFunction(v) === false)
+                      });
+                      //keys = _.without.apply(this, hideArgs)
+                      status.index.call(this, req, res, keys);
                     }
 );
-//app.get('/users', user.list);
 
+// Stringified representation of chosen property for a given bot
 app.get('/status/:handle/:key/',  function(req, res) {
                             var handle = req.params.handle,
-                                key = req.params.key;
+                                key = req.params.key,
+                                bot = Bot.bots[handle];
 
-                            status.object.call(this, req, res, JSON.stringify(Bot.bots[handle][key],null,'\t'));
+                            if (_.contains(bot.hideDash, key) !== true) {
+                              status.object.call(this, req, res, JSON.stringify(Bot.bots[handle][key],null,'\t'));
+                            }
+                            else {
+                              status.object.call(this, req, res, "You can't see that property.");
+                            }
                           }
 );
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
-
-
-/*
-app.get('/status', function(req, res) {
-    var handle = req.query.handle || "undefined",
-        key = req.query.key || "undefined",
-        handles, keys,
-        output = "";
-
-    if (key !== "undefined" && handle !== "undefined") {
-      console.log("Fetching info for Bot.bots[" + handle + "]." + key);
-      output = '<pre>' + JSON.stringify(Bot.bots[handle][key],null,'\t') + '</pre>';
-    }
-    else if (handle !== "undefined") {
-      console.log("Fetching info for Bot.bots[" + handle + "]");
-      keys = _.keys(Bot.bots[handle]);
-      _.each(keys, function (k, i, o) {
-        output += '<a href="/status?handle=' + handle + '&key=' + k + '">' + k + '</a><br />';
-      });
-    } else {
-      console.log("Fetching list of Bot.bots handles");
-      handles = _.keys(Bot.bots);
-      _.each(handles, function (k, i, o) {
-        output += '<a href="/status?handle=' + k + '">' + k + '</a><br />';
-      });
-    }
-
-    res.send(output)
-});
-*/
 
 //Immediate function to construct bots and make setInterval calls:
 (function (botConfigs) {

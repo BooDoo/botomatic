@@ -72,7 +72,8 @@ var credentials = {
       flickr:               credentials.flickr_boodoo,
       tags:                 "cat%2C+-caterpillar",
       lyricType:            "rap",
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000,
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash"]
     },
 
     countrydogs:
@@ -84,7 +85,8 @@ var credentials = {
       flickr:               credentials.flickr_boodoo,
       tags:                 "dog",
       lyricType:            "country",
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000,
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash"]
     },
 /*
     lyrpic:
@@ -96,7 +98,8 @@ var credentials = {
       flickr:               credentials.flickr_boodoo,
       tags:                 "",
       lyricType:            "all",
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000,
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash"]
     },
 */
     camptownraces:
@@ -110,7 +113,8 @@ var credentials = {
       suffix:               ' / doo-dah, doo-dah…',
       //queueMax:             300,
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*10 : 30000,
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000,
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash"]
     },
 
     xyisx:
@@ -142,7 +146,8 @@ var credentials = {
                           }
       },
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*15   : 30000
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*15   : 30000,
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash"]
     },
 
     latourandorder:
@@ -157,6 +162,7 @@ var credentials = {
       preSource:            0,
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 60000,
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash"]
     },
 
     latourswag:
@@ -168,7 +174,8 @@ var credentials = {
       criteria:             ["#swag and", "from:latourbot"],
       pivot:                " and ",
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*30 : 60000,
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000,
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash"]
     },
 
     commentsreminder: {
@@ -180,7 +187,8 @@ var credentials = {
       isRandom:             true,
       //prefix:             '',
       //suffix:             '',
-      interval:             process.env.NODE_ENV === 'production' ? 60000*60*24 : 30000
+      interval:             process.env.NODE_ENV === 'production' ? 60000*60*24 : 30000,
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash"]
     },
 
     mlg420:
@@ -193,7 +201,8 @@ var credentials = {
       //contentPool:        ,
       //isRandom:           true,
       searchInterval:       process.env.NODE_ENV === 'production' ? 60000*60*4 : 30000,
-      interval:             process.env.NODE_ENV === 'production' ? 60000*60*8 : 60000
+      interval:             process.env.NODE_ENV === 'production' ? 60000*60*8 : 60000,
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash"]
     }
   };
 
