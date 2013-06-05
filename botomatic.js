@@ -37,7 +37,12 @@ if ('development' == app.get('env')) {
 
 // Dashboard listing running bots by name
 app.get('/status/', function(req, res) {
-                status.index.call(this, req, res, _.keys(Bot.bots));
+                //Check against CONFIG.bots to get all bots, and then verify against Bot.bots for state flag instead?
+                var handles = _.keys(Bot.bots),
+                    states = _.each(Array(handles.length), function (v, i, a) { a[i] = "up";}),
+                    buttons = _.object(handles, states);
+
+                status.index.call(this, req, res, buttons);
              }
 );
 
@@ -46,14 +51,16 @@ app.get('/status/:handle/', function(req, res) {
                       var handle    = req.params.handle,
                           bot       = Bot.bots[handle],
                           keys      = _.keys(bot),
-                          hideDash  = bot.hideDash;
+                          hideDash  = bot.hideDash,
+                          states, buttons;
 
-                      //hideArgs.unshift(keys);
+                      
                       keys = _.filter(keys, function(v, k, o) {
-                        return (_.contains(hideDash, k) === false && _.isFunction(v) === false)
+                        return (_.contains(hideDash, k) === false && _.isFunction(v) === false);
                       });
-                      //keys = _.without.apply(this, hideArgs)
-                      status.index.call(this, req, res, keys);
+                      states = _.each(Array(keys.length), function (v, i, a) { a[i] = "up";}),
+                      buttons = _.object(keys,states);
+                      status.index.call(this, req, res, buttons);
                     }
 );
 

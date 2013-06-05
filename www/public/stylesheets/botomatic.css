@@ -1,0 +1,14 @@
+.pure-button-up,
+.pure-button-down {
+  color: white;
+  border-radius: 4px;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.3);
+}
+
+.pure-button-up {
+  background: rgb(76, 201, 71);
+}
+
+.pure-button-down {
+  background: rgb(202, 60, 60);
+}
