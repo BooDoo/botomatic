@@ -6,8 +6,24 @@ Currently used for Twitter bots @LatourAndOrder, @GCatPix, @CWDogPix, @ct_races 
 var CONFIG      = require('./config.js'),
     express     = require('express'),
     app         = express(),
+    status = require('./www/routes/status'),
+    http = require('http'),
+    path = require('path'),
     _           = require('lodash'),
     Bot         = require('./lib/Bot.js');
+
+// all environments
+app.set('port', process.env.PORT || 3000);
+app.set('views', path.join (__dirname, 'www' , 'views'));
+app.set('view engine', 'jade');
+app.use(express.favicon());
+app.use(express.logger('dev'));
+app.use(express.bodyParser());
+app.use(express.methodOverride());
+app.use(express.cookieParser('your secret here'));
+app.use(express.session());
+app.use(app.router);
+app.use(express.static(path.join(__dirname, 'www', 'public')));
 
 // This is present for deployment to nodejitsu, which requires some response to http call.
 app.get('/', function(req, res){
@@ -15,6 +31,35 @@ app.get('/', function(req, res){
     //res.send(JSON.stringify(_.keys(Bot.bots),null,2));
 });
 
+if ('development' == app.get('env')) {
+  app.use(express.errorHandler());
+}
+
+app.get('/status/', function(req, res) {
+                status.index.call(this, req, res, _.keys(Bot.bots));
+             }
+);
+app.get('/status/:handle/', function(req, res) {
+                      var handle = req.params.handle
+                      status.index.call(this, req, res, _.keys(Bot.bots[handle]));
+                    }
+);
+//app.get('/users', user.list);
+
+app.get('/status/:handle/:key/',  function(req, res) {
+                            var handle = req.params.handle,
+                                key = req.params.key;
+
+                            status.object.call(this, req, res, JSON.stringify(Bot.bots[handle][key],null,'\t'));
+                          }
+);
+
+http.createServer(app).listen(app.get('port'), function(){
+  console.log('Express server listening on port ' + app.get('port'));
+});
+
+
+/*
 app.get('/status', function(req, res) {
     var handle = req.query.handle || "undefined",
         key = req.query.key || "undefined",
@@ -41,8 +86,7 @@ app.get('/status', function(req, res) {
 
     res.send(output)
 });
-
-app.listen(process.env.PORT || 3000);
+*/
 
 //Immediate function to construct bots and make setInterval calls:
 (function (botConfigs) {
