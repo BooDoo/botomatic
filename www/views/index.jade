@@ -3,8 +3,8 @@ extends layout
 block content
   h1= title
   p Welcome to #{title}
-  each status, label in buttons
-  	if status == 'down'
-    	a.pure-button.pure-button-down(href='#{label}/')= label
+  each button in buttons
+    if button.state === false
+      a.pure-button.pure-button-bot.pure-button-disabled(href='#{button.label}/')= button.label
     else
-    	a.pure-button.pure-button-up(href='#{label}/')= label
+      a.pure-button.pure-button-bot(href='#{button.label}/')= button.label

@@ -73,7 +73,7 @@ var credentials = {
       tags:                 "cat%2C+-caterpillar",
       lyricType:            "rap",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000,
-      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash"]
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 
     countrydogs:
@@ -86,7 +86,7 @@ var credentials = {
       tags:                 "dog",
       lyricType:            "country",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000,
-      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash"]
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 /*
     lyrpic:
@@ -99,7 +99,7 @@ var credentials = {
       tags:                 "",
       lyricType:            "all",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000,
-      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash"]
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 */
     camptownraces:
@@ -114,7 +114,7 @@ var credentials = {
       //queueMax:             300,
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*10 : 30000,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000,
-      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash"]
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 
     xyisx:
@@ -147,7 +147,7 @@ var credentials = {
       },
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15   : 30000,
-      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash"]
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 
     latourandorder:
@@ -162,7 +162,7 @@ var credentials = {
       preSource:            0,
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 60000,
-      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash"]
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 
     latourswag:
@@ -175,7 +175,7 @@ var credentials = {
       pivot:                " and ",
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*30 : 60000,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000,
-      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash"]
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 
     commentsreminder: {
@@ -188,7 +188,7 @@ var credentials = {
       //prefix:             '',
       //suffix:             '',
       interval:             process.env.NODE_ENV === 'production' ? 60000*60*24 : 30000,
-      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash"]
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 
     mlg420:
@@ -202,7 +202,7 @@ var credentials = {
       //isRandom:           true,
       searchInterval:       process.env.NODE_ENV === 'production' ? 60000*60*4 : 30000,
       interval:             process.env.NODE_ENV === 'production' ? 60000*60*8 : 60000,
-      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash"]
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     }
   };
 
