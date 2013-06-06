@@ -1,0 +1,10 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+  each button in buttons
+    if button.state === false
+      a.pure-button.pure-button-bot.pure-button-disabled(href='#{button.label}/')= button.label
+    else
+      a.pure-button.pure-button-bot(href='#{button.label}/')= button.label
