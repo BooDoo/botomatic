@@ -48,6 +48,15 @@ var credentials = {
       access_token_secret:  process.env['LYRPIC_TWITTER_ACCESS_TOKEN_SECRET']
     },
 
+    twitter_latour:
+    {
+      service:              "twitter",
+      consumer_key:         process.env['LATOUR_TWITTER_CONSUMER_KEY'],
+      consumer_secret:      process.env['LATOUR_TWITTER_CONSUMER_SECRET'],
+      access_token:         process.env['LATOUR_TWITTER_ACCESS_TOKEN'],
+      access_token_secret:  process.env['LATOUR_TWITTER_ACCESS_TOKEN_SECRET']
+    },
+
     flickr_boodoo:
     {
       service:              "flickr",
@@ -160,50 +169,8 @@ var credentials = {
       preSource:            1,
       criteria:             [], //unused at present
       pivot:                '', //also unused
-      prioritySource:       1,
-      preSource:            0,
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 60000,
-      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
-    },
-
-    latourswag:
-    {
-      type:                 "tweetmash",
-      handle:               "latourswag",
-      format:               "<%= pre %><%= pivot %><%= post %>",
-      twitter:              credentials.twitter_xyisx,
-      criteria:             ["#swag and", "from:latourbot"],
-      pivot:                " and ",
-      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*30 : 60000,
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000,
-      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
-    },
-
-    commentsreminder: {
-      type:                 "reminder",
-      handle:               "commentsreminder",
-      format:               "<%= content %>",
-      twitter:              credentials.twitter_xyisx,
-      contentPool:          ['Message 1', 'Message 2', 'Message 3', 'Message 4', 'Message 5', 'Message 6', 'Message 7', 'Message 8'],
-      isRandom:             true,
-      //prefix:             '',
-      //suffix:             '',
-      interval:             process.env.NODE_ENV === 'production' ? 60000*60*24 : 30000,
-      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
-    },
-
-    mlg420:
-    {
-      type:                 "youtube",
-      handle:               "mlg420",
-      format:               "<%= vidTitle %> <%= vidURL %>",
-      twitter:              credentials.twitter_xyisx,
-      criteria:             'mlg+420',
-      //contentPool:        ,
-      //isRandom:           true,
-      searchInterval:       process.env.NODE_ENV === 'production' ? 60000*60*4 : 30000,
-      interval:             process.env.NODE_ENV === 'production' ? 60000*60*8 : 60000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     }
   };
