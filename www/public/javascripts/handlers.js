@@ -1,36 +1,24 @@
-function botClickHandler(e) {
-  var handle = e.target.innerText,
-      endpoint = e.target.href,
+function clickHandler(e) {
+  var target = e.target,
+      label = target.innerText,
+      endpoint = target.href,
+      targetParent = target.parentElement,
       postReq = new XMLHttpRequest(),
-      otherPrimary = document.getElementsByClassName('pure-button-bot pure-button-primary')[0],
-      updateElement = document.getElementById('properties-column');
+      currentPrimary = targetParent.getElementsByClassName('pure-button-primary')[0],
+      updateTarget = targetParent.nextElementSibling, //document.getElementById('properties-column');
+      clearTarget = updateTarget.nextElementSibling;
 
-  if (otherPrimary) otherPrimary.classList.remove('pure-button-primary');
-  e.target.classList.add('pure-button-primary');
+  if (currentPrimary)
+    currentPrimary.classList.remove('pure-button-primary');
+  
+  target.classList.add('pure-button-primary');
   postReq.open("POST", endpoint, true);
   postReq.onreadystatechange = function() {
-    if (postReq.readyState !== 4 || postReq.status !== 200) return;
-    updateElement.innerHTML = postReq.responseText;
-    document.getElementById('value-column').innerHTML = "";
+    if (postReq.readyState !== 4 || (postReq.status !== 200 && postReq.status !== 304) ) return;
+    updateTarget.innerHTML = postReq.responseText;
+    if (clearTarget)
+      clearTarget.innerHTML = "";
   }
-  postReq.send({"handle": handle});
-  e.preventDefault();
-}
-
-function propertyClickHandler(e) {
-  var key = e.target.innerText,
-      endpoint = e.target.href,
-      postReq = new XMLHttpRequest(),
-      otherPrimary = document.getElementsByClassName('pure-button-property pure-button-primary')[0],
-      updateElement = document.getElementById('value-column');
-
-  if (otherPrimary) otherPrimary.classList.remove('pure-button-primary');
-  e.target.classList.add('pure-button-primary');
-  postReq.open("POST", endpoint, true);
-  postReq.onreadystatechange = function() {
-    if (postReq.readyState !== 4 || postReq.status !== 200) return;
-    updateElement.innerHTML = postReq.responseText;
-  }
-  postReq.send({"key": key});
-  e.preventDefault();
+  postReq.send({"endpoint": endpoint});
+  e.preventDefault(); 
 }

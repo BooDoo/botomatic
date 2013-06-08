@@ -6,5 +6,5 @@ block properties
     if keyButton.state === false
       a.pure-button.pure-button-property.pure-button-disabled(href='/#{path}#{keyButton.label}/')= keyButton.label
     else
-      a.pure-button.pure-button-property(href='/#{path}#{keyButton.label}/', onclick='propertyClickHandler(event)')= keyButton.label
+      a.pure-button.pure-button-property(href='/#{path}#{keyButton.label}/', onclick='clickHandler(event)')= keyButton.label
     // ...

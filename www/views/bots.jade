@@ -4,4 +4,4 @@ block bots
     if botButton.state === false
       a.pure-button.pure-button-bot.pure-button-disabled(href='/status/#{botButton.label}/')= botButton.label
     else
-      a.pure-button.pure-button-bot(href='/status/#{botButton.label}/', onclick='botClickHandler(event)')= botButton.label
+      a.pure-button.pure-button-bot(href='/status/#{botButton.label}/', onclick='clickHandler(event)')= botButton.label
