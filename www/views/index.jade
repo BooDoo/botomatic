@@ -1,10 +1,13 @@
 extends layout
 
-block content
+block 3col
   h1= title
   p Welcome to #{title}
-  each button in buttons
-    if button.state === false
-      a.pure-button.pure-button-bot.pure-button-disabled(href='#{button.label}/')= button.label
-    else
-      a.pure-button.pure-button-bot(href='#{button.label}/')= button.label
+  div.pure-u-1-5#bots-column
+    include bots
+  div.pure-u-1-5#properties-column
+    if properties
+      include properties
+  div.pure-u-3-5#value-column
+    if target
+      include target

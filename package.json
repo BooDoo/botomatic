@@ -1,7 +1,7 @@
 {
   "name": "gcatpix",
   "description": "Construct multiple Twitter bots using a simple config file",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "homepage": "https://github.com/BooDoo/botomatic",
   "author": {
     "name": "Joel McCoy",
@@ -22,16 +22,16 @@
     }
   ],
   "dependencies": {
-    "express": "3.0.x",
-    "twit": "1.0.x",
+    "express": "3.x.x",
+    "twit": "1.x.x",
     "cmudict": "1.0.x",
-    "lodash": "1.0.x",
+    "lodash": "1.x.x",
     "underscore.deferred": "0.4.x",
     "request": "2.14.x",
     "jade": "0.31.x"
   },
   "engines": {
-    "node": "0.8.x",
+    "node": "0.x.x",
     "npm": "1.1.x"
   },
   "subdomain": "gcatpix",
