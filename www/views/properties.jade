@@ -1,0 +1,10 @@
+block properties
+  h2 Properties
+  - var path = url.split("/").slice(1,3).join("/") + "/";
+  - console.log(path)
+  each keyButton in properties
+    if keyButton.state === false
+      a.pure-button.pure-button-property.pure-button-disabled(href='/#{path}#{keyButton.label}/')= keyButton.label
+    else
+      a.pure-button.pure-button-property(href='/#{path}#{keyButton.label}/', onclick='clickHandler(event)')= keyButton.label
+    // ...

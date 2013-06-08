@@ -1,0 +1,13 @@
+extends layout
+
+block 3col
+  h1= title
+  p Welcome to #{title}
+  div.pure-u-1-5#bots-column
+    include bots
+  div.pure-u-1-5#properties-column
+    if properties
+      include properties
+  div.pure-u-3-5#value-column
+    if target
+      include target

@@ -1,0 +1,15 @@
+.pure-button-bot,
+.pure-button-property {
+  display: block;
+  margin: 0.4em 0em 0.4em 1em;
+  max-width: 150px;
+  border-radius: 4px;
+  color: white;
+  background: rgb(76, 201, 71);
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.3);
+}
+
+.pure-button-bot.pure-button-disabled,
+.pure-button-property.pure-button-disabled {
+  background: rgb(202, 60, 60);
+}
