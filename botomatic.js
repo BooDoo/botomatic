@@ -40,10 +40,11 @@ if ('development' == app.get('env')) {
 }
 
 // Dashboard lists bots by name, sorted with active first
-app.get('/status/', function(req, res) {
+// NOT UESD BY POST?
+app.post('/status/', function(req, res) {
   var handles = _.keys(CONFIG.bots),
       activeHandles = _.keys(Bot.bots),
-      buttons = _(handles)
+      bots = _(handles)
                 .each(function(v, i, a) {
                   a[i] = {
                     label: v,
@@ -55,51 +56,157 @@ app.get('/status/', function(req, res) {
                 })
                 .valueOf();
 
-  status.index.call(this, req, res, buttons);
+  status.index.call(this, req, res, bots);
 });
 
 // Listing of properties for a particular active bot
-app.get('/status/:handle/', function(req, res) {
+app.post('/status/:handle/', function(req, res) {
   var handle    = req.params.handle,
       bot       = Bot.bots[handle] || CONFIG.bots[handle],
       keys      = _.keys(bot),
       hideDash  = bot.hideDash,
-      buttons;
+      states, properties;
 
   //Filter out hidden properties and any functions.
   keys = _.filter(keys, function(v, i, a) {
     return ( !_.contains(hideDash, v) && !_.isFunction(bot[v]) );
   });
 
-  buttons = _.each(keys, function(v, i, a) {
+  //states = _.each(Array(keys.length), function (v, i, a) { a[i] = true;}),
+  properties = _.each(keys, function(v, i, a) {
+                a[i] = {
+                  label: v,
+                  state: true
+                };
+              });
+  status.properties.call(this, req, res, properties);
+});
+
+// Stringified representation of chosen property for a given bot
+app.post('/status/:handle/:key/',  function(req, res) {
+  var handle = req.params.handle,
+      key = req.params.key,
+      bot = Bot.bots[handle] || CONFIG.bots[handle],
+      target = bot[key];
+
+  if (_.contains(bot.hideDash, key) || (_.isEmpty(target) && !_.isNumber(target)) ) {
+    //Hidden or empty value
+    status.target.call(this, req, res, "No value stored");
+  }
+  else {
+    //Stringify the object, unless it's a Number or already a String
+    if (!_.isNumber(target) && !_.isString(target)) {
+      target = JSON.stringify(target,null,'\t');
+    }
+    status.target.call(this, req, res, target);
+  }
+
+});
+
+// Dashboard lists bots by name, sorted with active first
+app.get('/status/', function(req, res) {
+  var handles = _.keys(CONFIG.bots),
+      activeHandles = _.keys(Bot.bots),
+      bots = _(handles)
+                .each(function(v, i, a) {
+                  a[i] = {
+                    label: v,
+                    state: _.contains(activeHandles, v)
+                  };
+                })
+                .sortBy(function (v,k,o) {
+                  return !v.state;
+                })
+                .valueOf();
+
+  status.index.call(this, req, res, bots);
+});
+
+// Listing of properties for a particular active bot
+// TODO: REMOVE REDUNDANT CODE!
+app.get('/status/:handle/', function(req, res) {
+  var handle    = req.params.handle,
+      bot       = Bot.bots[handle] || CONFIG.bots[handle],
+      handles = _.keys(CONFIG.bots),
+      activeHandles = _.keys(Bot.bots),
+      bots = _(handles)
+                .each(function(v, i, a) {
+                  a[i] = {
+                    label: v,
+                    state: _.contains(activeHandles, v)
+                  };
+                })
+                .sortBy(function (v,k,o) {
+                  return !v.state;
+                })
+                .valueOf();
+      keys      = _.keys(bot),
+      hideDash  = bot.hideDash,
+      properties;
+
+  //Filter out hidden properties and any functions.
+  keys = _.filter(keys, function(v, i, a) {
+    return ( !_.contains(hideDash, v) && !_.isFunction(bot[v]) );
+  });
+
+  properties = _.each(keys, function(v, i, a) {
               a[i] = {
                 label: v,
                 state: true
               };
             });
 
-  status.index.call(this, req, res, buttons);
+  status.index.call(this, req, res, bots, properties);
 });
 
 // Stringified representation of chosen property for a given bot
+// TODO: REMOVE REDUNDANT CODE!
 app.get('/status/:handle/:key/',  function(req, res) {
   var handle = req.params.handle,
       key = req.params.key,
       bot = Bot.bots[handle] || CONFIG.bots[handle],
+      handles = _.keys(CONFIG.bots),
+      activeHandles = _.keys(Bot.bots),
+      bots = _(handles)
+                .each(function(v, i, a) {
+                  a[i] = {
+                    label: v,
+                    state: _.contains(activeHandles, v)
+                  };
+                })
+                .sortBy(function (v,k,o) {
+                  return !v.state;
+                })
+                .valueOf();
+      keys      = _.keys(bot),
+      properties,
+      hideDash  = bot.hideDash,
       target = bot[key];
+
+  //Filter out hidden properties and any functions.
+  keys = _.filter(keys, function(v, i, a) {
+    return ( !_.contains(hideDash, v) && !_.isFunction(bot[v]) );
+  });
+
+  properties = _.each(keys, function(v, i, a) {
+              a[i] = {
+                label: v,
+                state: true
+              };
+            });
+
 
   if (_.contains(bot.hideDash, key) !== true) {
 
     //Stringify the object, unless it's a Number or already a String
     if (!_.isNumber(target) && !_.isString(target)) {
-      if (key === "intervalId") console.log("!!!\n",target,"\n!!!!");
       target = JSON.stringify(target,null,'\t');
     }
 
-    status.object.call(this, req, res, target);
+    status.object.call(this, req, res, bots, properties, target);
   }
   else {
-    status.object.call(this, req, res, "You can't see that property.");
+    status.object.call(this, req, res, bots, properties, "You can't see that property.");
   }
 });
 
