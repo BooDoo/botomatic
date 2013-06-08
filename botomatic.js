@@ -1,10 +1,10 @@
 /*
  * This script creates a new Bot object for each bot in `config.js`
- * and serves a basic dashboard at ./status/
+ * and servs a basic dashboard at ./status
  *
  * Currently used for:
  * @LatourAndOrder, @GCatPix, @CWDogPix, @ct_races and @xyisx_bot
- */
+*/
 
 var CONFIG      = require('./config.js'),
     express     = require('express'),
@@ -12,7 +12,6 @@ var CONFIG      = require('./config.js'),
     status      = require('./www/routes/status'),
     http        = require('http'),
     path        = require('path'),
-    fs          = require('fs'),
     _           = require('lodash'),
     Bot         = require('./lib/Bot.js'),
     Server      = require('./lib/Server.js'),
@@ -30,11 +29,11 @@ var CONFIG      = require('./config.js'),
 app.set('port', process.env.PORT || 3000);
 app.set('views', path.join (__dirname, 'www' , 'views'));
 app.set('view engine', 'jade');
-app.use(express.favicon()); //TODO: Make a favicon!
+app.use(express.favicon()); //TODO: Make a favicon
 app.use(express.logger('dev')); //TODO: Toggle logging?
 app.use(express.bodyParser());
 app.use(express.methodOverride());
-app.use(express.cookieParser('what color is the sky?')); //Do I need this?
+app.use(express.cookieParser('your secret here')); //Do I need this?
 app.use(express.session());
 app.use(passport.initialize());
 app.use(passport.session());
@@ -45,51 +44,113 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-passport.serializeUser(function(user, done) {
-    done(null, user.username);
-});
+function botsWithState(handles, activeHandles) {
+  handles = handles || _.keys(CONFIG.bots);
+  activeHandles = activeHandles || _.keys(Bot.bots);
+  var bots = _(handles)
+                .each(function(v, i, a) {
+                  a[i] = {
+                    label: v,
+                    state: _.contains(activeHandles, v)
+                  };
+                })
+                .sortBy(function (v,k,o) {
+                  return !v.state;
+                })
+                .valueOf();
+  return bots;
+}
 
-passport.deserializeUser(function(username, done) {
-    done(null, authUsers[username] );
-});
+function propertiesWithState(handle) {
+  var bot       = Bot.bots[handle] || CONFIG.bots[handle],
+      hideDash  = bot.hideDash,
+      properties= _.keys(bot);
 
-//Authenticate against CONFIG.dashboard.admins:
-//TODO: Make second Strategy for users who aren't admins?
-passport.use("digest",
-  new DigestStrat({ qop: 'auth' },
-  function(username, done) {
-    user = authUsers[username];
-      console.log("Authenticating as:",username);
-      if (!user) { return done(null, false); }
-      return done(null, user, user.password);
+  //Filter out hidden properties and any functions.
+  //Assume "true" state for all non-hidden properties
+  properties = _(properties)
+                  .filter(function (v,i,a) {
+                    return ( !_.contains(hideDash, v) && !_.isFunction(bot[v]) );
+                  })
+                  .each(function (v,i,a) {
+                    a[i] = {
+                      label: v,
+                      state: true
+                    };
+                  })
+                  .valueOf();
+  return properties;
+}
+
+function parseTarget(handle,key,target) {
+  var bot = Bot.bots[handle] || CONFIG.bots[handle],
+      target = target || bot[key];
+
+  if (_.contains(bot.hideDash, key) || (_.isEmpty(target) && !_.isNumber(target)) ) {
+    //Hidden or empty value
+    target = "No value stored";
   }
-));
+  else {
+    //Stringify the object, unless it's a Number or already a String
+    if (!_.isNumber(target) && !_.isString(target))
+      target = JSON.stringify(target,null,'\t');
+  }
 
-//Either route below works to update property values via POST
-app.post('/update/',
-  freeEdit || passport.authenticate('digest'),
-    Server.updateProperties
-);
-
-app.post('/update/:handle/:key/',
-  freeEdit || passport.authenticate('digest'),
-    Server.updateProperties
-);
+  return target;
+}
 
 //Some junk for someone visiting the base url
-//TODO: Make an actual page here.
 app.get('/', function(req, res){
-  res.send('<a href="http://github.com/BooDoo/botomatic/">' +
-           'I am botomatic</a>');
+    res.send('IGNORE ME.<br /><br />' +
+    '<a href="http://github.com/BooDoo/botomatic/tree/gcatpix">' +
+    'I am botomatic</a>');
 });
 
-//Present a stringified JSON record of current bot states in browser
-app.get('/store/',
-  freeStore || passport.authenticate('digest'),
-    function(req, res) {
-      res.send("<pre>" + JSON.stringify(Bot.storeBots(),null,'  ') + "</pre>");
-    }
-);
+// Dashboard lists bots by name, sorted with active first
+// NOT UESD BY POST?
+app.post('/status/', function(req, res) {
+  status.index.call(this, req, res,
+    botsWithState()
+  );
+});
+
+// Listing of properties for a particular active bot
+app.post('/status/:handle/', function(req, res) {
+  status.properties.call(this, req, res, 
+    propertiesWithState(req.params.handle)
+  );
+});
+
+// Stringified representation of chosen property for a given bot
+app.post('/status/:handle/:key/',  function(req, res) {
+  status.target.call(this, req, res,
+    parseTarget(req.params.handle, req.params.key)
+  );
+});
+
+// Dashboard lists bots by name, sorted with active first
+app.get('/status/', function(req, res) {
+  status.index.call(this, req, res,
+    botsWithState()
+  );
+});
+
+// Listing of properties for a particular active bot
+app.get('/status/:handle/', function(req, res) {
+  status.index.call(this, req, res,
+    botsWithState(),
+    propertiesWithState(req.params.handle)
+  );
+});
+
+// Stringified representation of chosen property for a given bot
+app.get('/status/:handle/:key/',  function(req, res) {
+  status.index.call(this, req, res,
+    botsWithState(),
+    propertiesWithState(req.params.handle),
+    parseTarget(req.params.handle, req.params.key)
+  );
+});
 
 //Provide a downloadable JSON record of current bot states
 app.get('/store/bots.json',
@@ -99,73 +160,6 @@ app.get('/store/bots.json',
     res.end(JSON.stringify(Bot.storeBots(), null, '  '), 'utf8');
   }
 );
-
-// Dashboard lists bots by name, sorted with active first
-app.post('/status/',
-  freeView || passport.authenticate('digest'),
-    function(req, res) {
-      status.index.call(this, req, res,
-        Server.botsWithState()
-      );
-    }
-);
-
-// Listing of properties for a particular active bot
-app.post('/status/:handle/',
-  freeView || passport.authenticate('digest'),
-    function(req, res) {
-      status.properties.call(this, req, res,
-        Server.propertiesWithState(req.params.handle)
-      );
-    }
-);
-
-// Stringified representation of chosen property for a given bot
-app.post('/status/:handle/:key/',
-  freeView || passport.authenticate('digest'),
-    function(req, res) {
-      status.target.call(this, req, res,
-        Server.parseTarget(req.params.handle, req.params.key)
-      );
-    }
-);
-
-// Dashboard lists bots by name, sorted with active first
-app.get('/status/',
-  freeView || passport.authenticate('digest'),
-    function(req, res) {
-      status.index.call(this, req, res,
-        Server.botsWithState()
-      );
-    }
-);
-
-// Listing of properties for a particular active bot
-app.get('/status/:handle/',
-  freeView || passport.authenticate('digest'),
-    function(req, res) {
-      status.index.call(this, req, res,
-        Server.botsWithState(),
-        Server.propertiesWithState(req.params.handle)
-      );
-    }
-);
-
-// Stringified representation of chosen property for a given bot
-app.get('/status/:handle/:key/',
-  freeView || passport.authenticate('digest'),
-    function(req, res) {
-      status.index.call(this, req, res,
-        Server.botsWithState(),
-        Server.propertiesWithState(req.params.handle),
-        Server.parseTarget(req.params.handle, req.params.key)
-      );
-    }
-);
-
-http.createServer(app).listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
-});
 
 //Immediate function to construct bots and make setInterval calls:
 (function (botConfigs) {

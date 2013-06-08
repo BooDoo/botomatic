@@ -139,7 +139,7 @@ var credentials = {
       twitter:              credentials.twitter_lyrpic,
       flickr:               credentials.flickr,
       tags:                 "",
-      lyricType:            "lyricryptic",
+      lyricType:            "all",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
@@ -190,32 +190,6 @@ var credentials = {
       },
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15   : 30000,
-      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
-    },
-
-    howilikeit:
-    {
-      type:                 "howilikeit",
-      handle:               "howilikeit",
-      format:               "I like my <%= person %> like I like my <%= object %>: <%= desc0 %>, <%= desc1 %>, <%= junc %> <%= desc2 %>",
-      twitter:              credentials.twitter_likeilike,
-      wordnik:              credentials.wordnik,
-      words:
-      {
-                    object:
-                          {
-                            includePartOfSpeech: "noun",
-                            excludePartOfSpeech: "pronoun,noun-posessive,proper-noun-posessive,suffix,idiom,affix",
-                            hasDictionaryDef: false,
-                            limit: 10,
-                            minDictionaryCount: 10,
-                            minCorpusCount: 5000
-                          }
-      },
-      persons:              ["men", "women", "ladies", "fellahs", "partners", "hook-ups", "pairings", "lovers", "husbands", "wives", "spouses"],
-      juncs:                ["and", "but", "not"],
-      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000/2,
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*45   : 60000*3,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 
