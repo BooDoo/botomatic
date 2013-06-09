@@ -15,7 +15,8 @@ var CONFIG      = require('./config.js'),
     fs          = require('fs'),
     _           = require('lodash'),
     Bot         = require('./lib/Bot.js'),
-    botStates   = fs.existsSync('./bots.json');
+    Server      = require('./lib/Server.js'),
+    botStates   = fs.existsSync('./bots.json') ? JSON.parse(fs.readFileSync('./bots.json', 'utf8')) : false;
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -34,60 +35,13 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-function botsWithState(handles, activeHandles) {
-  handles = handles || _.keys(CONFIG.bots);
-  activeHandles = activeHandles || _.keys(Bot.bots);
-  var bots = _(handles)
-                .each(function(v, i, a) {
-                  a[i] = {
-                    label: v,
-                    state: _.contains(activeHandles, v)
-                  };
-                })
-                .sortBy(function (v,k,o) {
-                  return !v.state;
-                })
-                .valueOf();
-  return bots;
-}
+app.post('/update/', function (req, res) {
+  Server.updateProperties(req, res);
+});
 
-function propertiesWithState(handle) {
-  var bot       = Bot.bots[handle] || CONFIG.bots[handle],
-      hideDash  = bot.hideDash,
-      properties= _.keys(bot);
-
-  //Filter out hidden properties and any functions.
-  //Assume "true" state for all non-hidden properties
-  properties = _(properties)
-                  .filter(function (v,i,a) {
-                    return ( !_.contains(hideDash, v) && !_.isFunction(bot[v]) );
-                  })
-                  .each(function (v,i,a) {
-                    a[i] = {
-                      label: v,
-                      state: true
-                    };
-                  })
-                  .valueOf();
-  return properties;
-}
-
-function parseTarget(handle,key,target) {
-  var bot = Bot.bots[handle] || CONFIG.bots[handle],
-      target = target || bot[key];
-
-  if (_.contains(bot.hideDash, key) || (_.isEmpty(target) && !_.isNumber(target)) ) {
-    //Hidden or empty value
-    target = "No value stored";
-  }
-  else {
-    //Stringify the object, unless it's a Number or already a String
-    if (!_.isNumber(target) && !_.isString(target))
-      target = JSON.stringify(target,null,'\t');
-  }
-
-  return target;
-}
+app.post('/update/:handle/:key/', function (req, res) {
+  Server.updateProperties(req, res);
+});
 
 //Some junk for someone visiting the base url
 app.get('/', function(req, res){
@@ -101,7 +55,6 @@ app.get('/store/', function(req, res) {
 });
 
 app.get('/store/bots.json', function(req, res) {
-  //res.download(JSON.stringify(Bot.storeBots(),null,'\t'));
   res.attachment('bots.json');
   res.end(JSON.stringify(Bot.storeBots(), null, '  '), 'utf8');
 });
@@ -110,45 +63,45 @@ app.get('/store/bots.json', function(req, res) {
 // NOT UESD BY POST?
 app.post('/status/', function(req, res) {
   status.index.call(this, req, res,
-    botsWithState()
+    Server.botsWithState()
   );
 });
 
 // Listing of properties for a particular active bot
 app.post('/status/:handle/', function(req, res) {
   status.properties.call(this, req, res,
-    propertiesWithState(req.params.handle)
+    Server.propertiesWithState(req.params.handle)
   );
 });
 
 // Stringified representation of chosen property for a given bot
 app.post('/status/:handle/:key/',  function(req, res) {
   status.target.call(this, req, res,
-    parseTarget(req.params.handle, req.params.key)
+    Server.parseTarget(req.params.handle, req.params.key)
   );
 });
 
 // Dashboard lists bots by name, sorted with active first
 app.get('/status/', function(req, res) {
   status.index.call(this, req, res,
-    botsWithState()
+    Server.botsWithState()
   );
 });
 
 // Listing of properties for a particular active bot
 app.get('/status/:handle/', function(req, res) {
   status.index.call(this, req, res,
-    botsWithState(),
-    propertiesWithState(req.params.handle)
+    Server.botsWithState(),
+    Server.propertiesWithState(req.params.handle)
   );
 });
 
 // Stringified representation of chosen property for a given bot
 app.get('/status/:handle/:key/',  function(req, res) {
   status.index.call(this, req, res,
-    botsWithState(),
-    propertiesWithState(req.params.handle),
-    parseTarget(req.params.handle, req.params.key)
+    Server.botsWithState(),
+    Server.propertiesWithState(req.params.handle),
+    Server.parseTarget(req.params.handle, req.params.key)
   );
 });
 
@@ -160,9 +113,6 @@ http.createServer(app).listen(app.get('port'), function(){
 (function (botConfigs) {
   var botHandle = '',
       stagger = 0;
-
-  if (botStates)
-    botStates = JSON.parse(fs.readFileSync('./bots.json', 'utf8'));
 
   for (botHandle in botConfigs) {
     setTimeout(function(botConfig, botState) {
