@@ -12,8 +12,10 @@ var CONFIG      = require('./config.js'),
     status      = require('./www/routes/status'),
     http        = require('http'),
     path        = require('path'),
+    fs          = require('fs'),
     _           = require('lodash'),
-    Bot         = require('./lib/Bot.js');
+    Bot         = require('./lib/Bot.js'),
+    botStates   = fs.existsSync('./bots.json');
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -89,9 +91,19 @@ function parseTarget(handle,key,target) {
 
 //Some junk for someone visiting the base url
 app.get('/', function(req, res){
-    res.send('IGNORE ME.<br /><br />' +
-    '<a href="http://github.com/BooDoo/botomatic/tree/gcatpix">' +
-    'I am botomatic</a>');
+  res.send('IGNORE ME.<br /><br />' +
+  '<a href="http://github.com/BooDoo/botomatic/tree/gcatpix">' +
+  'I am botomatic</a>');
+});
+
+app.get('/store/', function(req, res) {
+  res.send("<pre>" + JSON.stringify(Bot.storeBots(),null,'  ') + "</pre>");
+});
+
+app.get('/store/bots.json', function(req, res) {
+  //res.download(JSON.stringify(Bot.storeBots(),null,'\t'));
+  res.attachment('bots.json');
+  res.end(JSON.stringify(Bot.storeBots(), null, '  '), 'utf8');
 });
 
 // Dashboard lists bots by name, sorted with active first
@@ -104,7 +116,7 @@ app.post('/status/', function(req, res) {
 
 // Listing of properties for a particular active bot
 app.post('/status/:handle/', function(req, res) {
-  status.properties.call(this, req, res, 
+  status.properties.call(this, req, res,
     propertiesWithState(req.params.handle)
   );
 });
@@ -149,10 +161,13 @@ http.createServer(app).listen(app.get('port'), function(){
   var botHandle = '',
       stagger = 0;
 
+  if (botStates)
+    botStates = JSON.parse(fs.readFileSync('./bots.json', 'utf8'));
+
   for (botHandle in botConfigs) {
-    setTimeout(function(botConfig) {
-      new Bot(botConfig);
-    }, stagger, botConfigs[botHandle]);
+    setTimeout(function(botConfig, botState) {
+      new Bot(botConfig, botState);
+    }, stagger, botConfigs[botHandle], botStates[botHandle]);
 
     stagger = botConfigs[botHandle].interval / 2;
   }
