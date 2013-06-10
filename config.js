@@ -159,7 +159,7 @@ var credentials = {
       criteria:             [], //unused at present
       pivot:                '', //also unused
       prioritySource:       1,
-      preSource:            0,
+      preSource:            1,
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 60000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
