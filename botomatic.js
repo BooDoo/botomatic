@@ -16,6 +16,7 @@ var CONFIG      = require('./config.js'),
     _           = require('lodash'),
     Bot         = require('./lib/Bot.js'),
     Server      = require('./lib/Server.js'),
+    updateSecret= process.env.UPDATE_SECRET,
     botStates   = fs.existsSync('./bots.json') ? JSON.parse(fs.readFileSync('./bots.json', 'utf8')) : false;
 
 // all environments
@@ -36,10 +37,18 @@ if ('development' == app.get('env')) {
 }
 
 app.post('/update/', function (req, res) {
+  if (req.body.secret !== updateSecret) {
+    res.send("You are not authorized to perform that action",403);
+    return -1;
+  }
   Server.updateProperties(req, res);
 });
 
 app.post('/update/:handle/:key/', function (req, res) {
+  if (req.body.secret !== updateSecret) {
+    res.send("You are not authorized to perform that action",403);
+    return -1;
+  }
   Server.updateProperties(req, res);
 });
 
