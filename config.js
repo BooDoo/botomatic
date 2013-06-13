@@ -1,6 +1,22 @@
-//Two objects:
+//Three objects:
+//dashboard - settings for the express server/web dashboard
 //credentials - API keys/secrets
 //bots - configuration for each lyric/picture pairing robot
+
+var dashboard = {
+    admins : {
+      "boodoo":
+      {
+        username:           "boodoo",
+        password:           process.env['UPDATE_PASS'],
+        id:                 2167
+      }
+    },
+
+    protectView:            process.env['PROTECT_VIEW']   || false,
+    protectUpdate:          process.env['PROTECT_UPDATE'] || true,
+    protectStore:           process.env['PROTECT_STORE']  || true
+}
 
 var credentials = {
     twitter_gcatpix :
@@ -206,5 +222,6 @@ var credentials = {
     }
   };
 
+module.exports.dashboard = dashboard;
 module.exports.credentials = credentials;
 module.exports.bots = bots;
