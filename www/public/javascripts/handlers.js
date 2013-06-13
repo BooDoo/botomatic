@@ -56,11 +56,19 @@ function updateClickHandler(e) {
   postReq.overrideMimeType("text/plain");
   postReq.onreadystatechange = function() {
     if (postReq.readyState !== 4) {
-      if (postReq.status === 200 || postReq.status === 207) {
+      if (postReq.status === 200 || postReq.status === 207) { //All good (confirmed, or assumed)
+        target.classList.remove('pure-button-failed');
         target.innerText = "Success"
       }
-      else if (postReq.status === 500) {
+      else if (postReq.status === 500) { //Some kind of problem committing new value
+        target.classList.add('pure-button-failed');
         target.innerText = "Failure";
+        target.onclick = "";
+      }
+      else if (postReq.status === 401) { //Passport rejected authorization
+        target.classList.add('pure-button-failed');
+        target.classList.remove('pure-button-disabled');
+        target.innerText = "Retry?";
       }
     return postReq.status;
     }
