@@ -28,7 +28,9 @@
     "lodash": "1.0.x",
     "underscore.deferred": "0.4.x",
     "request": "2.14.x",
-    "jade": "0.31.x"
+    "jade": "0.31.x",
+    "passport",
+    "passport-http"
   },
   "engines": {
     "node": "0.8.x",
