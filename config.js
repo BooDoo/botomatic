@@ -5,11 +5,10 @@
 
 var dashboard = {
     admins : {
-      "boodoo":
+      "botALLY":
       {
-        username:           "boodoo",
-        password:           process.env['UPDATE_PASS'],
-        id:                 2167
+        username:           "botALLY",
+        password:           process.env['UPDATE_PASS']
       }
     },
 
