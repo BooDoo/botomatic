@@ -1,3 +1,5 @@
 block target
   h2 Value
-  pre= target
+  - var path = url.replace("/status/","/update/");
+  a.pure-button.pure-button-primary#update-button(href=path, onclick='updateClickHandler(event)') Submit Changes
+  pre#property-value(contenteditable="true" )= target

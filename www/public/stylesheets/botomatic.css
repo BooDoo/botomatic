@@ -10,6 +10,7 @@
 }
 
 .pure-button-bot.pure-button-disabled,
-.pure-button-property.pure-button-disabled {
+.pure-button-property.pure-button-disabled,
+#update-button.pure-button-failed {
   background: rgb(202, 60, 60);
 }

@@ -1,6 +1,21 @@
-//Two objects:
+//Three objects:
+//dashboard - settings for the express server/web dashboard
 //credentials - API keys/secrets
 //bots - configuration for each lyric/picture pairing robot
+
+var dashboard = {
+    admins : {
+      "botALLY":
+      {
+        username:           "botALLY",
+        password:           process.env['UPDATE_PASS']
+      }
+    },
+
+    protectView:            process.env['PROTECT_VIEW']   || false,
+    protectUpdate:          process.env['PROTECT_UPDATE'] || true,
+    protectStore:           process.env['PROTECT_STORE']  || true
+}
 
 var credentials = {
     twitter_gcatpix :
@@ -169,11 +184,14 @@ var credentials = {
       preSource:            1,
       criteria:             [], //unused at present
       pivot:                '', //also unused
+      prioritySource:       1,
+      preSource:            1,
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 60000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     }
   };
 
+module.exports.dashboard = dashboard;
 module.exports.credentials = credentials;
 module.exports.bots = bots;
