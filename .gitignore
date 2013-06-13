@@ -1,5 +1,5 @@
 ############
-## My Excl. 
+## My Excl.
 ############
 
 # Subversion data
@@ -174,3 +174,4 @@ pip-log.txt
 .setenv.sh
 setenv.sh
 *.geany
+payload.js
