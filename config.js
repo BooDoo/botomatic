@@ -72,6 +72,15 @@ var credentials = {
       access_token_secret:  process.env['LATOUR_TWITTER_ACCESS_TOKEN_SECRET']
     },
 
+    twitter_porpenteen:
+    {
+      service:              "twitter",
+      consumer_key:         process.env['PORP_TWITTER_CONSUMER_KEY'],
+      consumer_secret:      process.env['PORP_TWITTER_CONSUMER_SECRET'],
+      access_token:         process.env['PORP_TWITTER_ACCESS_TOKEN'],
+      access_token_secret:  process.env['PORP_TWITTER_ACCESS_TOKEN_SECRET']
+    },
+
     flickr_boodoo:
     {
       service:              "flickr",
@@ -188,6 +197,19 @@ var credentials = {
       preSource:            1,
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 60000,
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
+    },
+
+    porpenteen:
+    {
+      type:                 "tweetmash",
+      handle:               "porpenteen",
+      format:               "<%= pre %><%= pivot %><%= post %>",
+      twitter:              credentials.twitter_porpenteen,
+      criteria:             ["#swag and", "from:aliendovecote and"],
+      pivot:                " and ",
+      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*30 : 60000,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     }
   };
