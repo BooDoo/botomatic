@@ -78,7 +78,7 @@ var credentials = {
   },
 
   bots = {
-    rapcats:
+    /*rapcats:
     {
       type:                 "lyrpictweet",
       handle:               "rapcats",
@@ -103,6 +103,7 @@ var credentials = {
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
+    */
 /*
     lyrpic:
     {
@@ -116,7 +117,7 @@ var credentials = {
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
-*/
+*//*
     camptownraces:
     {
       type:                 "syllablecount",
@@ -164,6 +165,32 @@ var credentials = {
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15   : 30000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
+*/
+    howilikeit:
+    {
+      type:                 "howilikeit",
+      handle:               "howilikeit",
+      format:               "I like my <%= person %> like I like my <%= object %>: <%= desc0 %>, <%= desc1 %>, <%= junc %> <%= desc2 %>",
+      twitter:              credentials.twitter_xyisx,
+      wordnik:              credentials.wordnik_boodoo,
+      words:
+      {
+                    object:
+                          {
+                            includePartOfSpeech: "noun",
+                            excludePartOfSpeech: "pronoun,noun-posessive,proper-noun-posessive,suffix,idiom,affix",
+                            hasDictionaryDef: false,
+                            limit: 10,
+                            minDictionaryCount: 10,
+                            minCorpusCount: 5000
+                          }
+      },
+      persons:              ["men", "women", "ladies", "fellahs", "partners", "hook-ups", "pairings", "lovers", "husbands", "wives", "spouses"],
+      juncs:                ["and", "but", "not"],
+      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000/2,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*45   : 60000*3,
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
+    }/*,
 
     latourandorder:
     {
@@ -219,6 +246,7 @@ var credentials = {
       interval:             process.env.NODE_ENV === 'production' ? 60000*60*8 : 60000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     }
+*/
   };
 
 module.exports.dashboard = dashboard;
