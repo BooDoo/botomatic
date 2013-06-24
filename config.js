@@ -72,6 +72,15 @@ var credentials = {
       access_token_secret:  process.env['LATOUR_TWITTER_ACCESS_TOKEN_SECRET']
     },
 
+    twitter_likeilike:
+    {
+      service:              "twitter",
+      consumer_key:         process.env['LIKE_TWITTER_CONSUMER_KEY'],
+      consumer_secret:      process.env['LIKE_TWITTER_CONSUMER_SECRET'],
+      access_token:         process.env['LIKE_TWITTER_ACCESS_TOKEN'],
+      access_token_secret:  process.env['LIKE_TWITTER_ACCESS_TOKEN_SECRET']
+    },
+
     flickr_boodoo:
     {
       service:              "flickr",
@@ -188,6 +197,32 @@ var credentials = {
       preSource:            1,
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 60000,
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
+    },
+
+    likeilike:
+    {
+      type:                 "howilikeit",
+      handle:               "likeilike",
+      format:               "I like my <%= person %> like I like my <%= object %>: <%= desc0 %>, <%= desc1 %>, <%= junc %> <%= desc2 %>",
+      twitter:              credentials.twitter_likeilike,
+      wordnik:              credentials.wordnik_boodoo,
+      words:
+      {
+                    object:
+                          {
+                            includePartOfSpeech: "noun",
+                            excludePartOfSpeech: "pronoun,noun-posessive,proper-noun-posessive,suffix,idiom,affix",
+                            hasDictionaryDef: false,
+                            limit: 10,
+                            minDictionaryCount: 10,
+                            minCorpusCount: 5000
+                          }
+      },
+      persons:              ["men", "women", "ladies", "fellahs", "partners", "hook-ups", "pairings", "lovers", "husbands", "wives", "spouses"],
+      juncs:                ["and", "but", "not"],
+      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*30 : 60000/2,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*45 : 60000*3,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     }
   };
