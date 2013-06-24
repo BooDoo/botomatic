@@ -191,7 +191,7 @@ var credentials = {
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15   : 30000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
-*/
+
     latourandorder:
     {
       type:                 "latourandorder",
