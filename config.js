@@ -1,6 +1,21 @@
-//Two objects:
+//Three objects:
+//dashboard - settings for the express server/web dashboard
 //credentials - API keys/secrets
 //bots - configuration for each lyric/picture pairing robot
+
+var dashboard = {
+    admins : {
+      "botALLY":
+      {
+        username:           "botALLY",
+        password:           process.env['UPDATE_PASS']
+      }
+    },
+
+    protectView:            process.env['PROTECT_VIEW']   || false,
+    protectUpdate:          process.env['PROTECT_UPDATE'] || true,
+    protectStore:           process.env['PROTECT_STORE']  || true
+}
 
 var credentials = {
     twitter_gcatpix :
@@ -150,6 +165,32 @@ var credentials = {
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 
+    howilikeit:
+    {
+      type:                 "howilikeit",
+      handle:               "howilikeit",
+      format:               "I like my <%= person %> like I like my <%= object %>: <%= desc0 %>, <%= desc1 %>, <%= junc %> <%= desc2 %>",
+      twitter:              credentials.twitter_xyisx,
+      wordnik:              credentials.wordnik_boodoo,
+      words:
+      {
+                    object:
+                          {
+                            includePartOfSpeech: "noun",
+                            excludePartOfSpeech: "pronoun,noun-posessive,proper-noun-posessive,suffix,idiom,affix",
+                            hasDictionaryDef: false,
+                            limit: 10,
+                            minDictionaryCount: 10,
+                            minCorpusCount: 5000
+                          }
+      },
+      persons:              ["men", "women", "ladies", "fellahs", "partners", "hook-ups", "pairings", "lovers", "husbands", "wives", "spouses"],
+      juncs:                ["and", "but", "not"],
+      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000/2,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*45   : 60000*3,
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
+    },
+
     latourandorder:
     {
       type:                 "latourandorder",
@@ -206,5 +247,6 @@ var credentials = {
     }
   };
 
+module.exports.dashboard = dashboard;
 module.exports.credentials = credentials;
 module.exports.bots = bots;

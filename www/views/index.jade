@@ -3,6 +3,8 @@ extends layout
 block 3col
   h1= title
   p Welcome to #{title}
+  div
+    a.pure-button.pure-button-primary(href='/store/bots.json') Download current state
   div.pure-u-1-5#bots-column
     include bots
   div.pure-u-1-5#properties-column

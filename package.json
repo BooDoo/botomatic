@@ -26,9 +26,11 @@
     "twit": "1.1.x",
     "cmudict": "1.0.x",
     "lodash": "1.0.x",
-    "underscore.deferred": "0.4.x",
+    "when": "2.x.x",
     "request": "2.14.x",
-    "jade": "0.31.x"
+    "jade": "0.31.x",
+    "passport": "0.1.x",
+    "passport-http": "0.2.x"
   },
   "engines": {
     "node": "0.8.x",
