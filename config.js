@@ -90,14 +90,14 @@ var credentials = {
       access_token_secret:  process.env['LIKE_TWITTER_ACCESS_TOKEN_SECRET']
     },
 
-    flickr_boodoo:
+    flickr:
     {
       service:              "flickr",
       flickr_key:           process.env['BOODOO_FLICKR_KEY'],
       flickr_secret:        process.env['BOODOO_FLICKR_SECRET']
     },
 
-    wordnik_boodoo:
+    wordnik:
     {
       service:              "wordnik",
       api_key:              process.env['BOODOO_WORDNIK_KEY']
@@ -111,7 +111,7 @@ var credentials = {
       handle:               "rapcats",
       format:               "<%= lyricSegment %> <%= photoURL %>",
       twitter:              credentials.twitter_gcatpix,
-      flickr:               credentials.flickr_boodoo,
+      flickr:               credentials.flickr,
       tags:                 "cat%2C+-caterpillar",
       lyricType:            "rap",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000,
@@ -124,7 +124,7 @@ var credentials = {
       handle:               "countrydogs",
       format:               "<%= lyricSegment %> <%= photoURL %>",
       twitter:              credentials.twitter_cwdogpix,
-      flickr:               credentials.flickr_boodoo,
+      flickr:               credentials.flickr,
       tags:                 "dog",
       lyricType:            "country",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000,
@@ -137,9 +137,9 @@ var credentials = {
       handle:               "lyrpic",
       format:               "<%= lyricSegment %> <%= photoURL %>",
       twitter:              credentials.twitter_lyrpic,
-      flickr:               credentials.flickr_boodoo,
+      flickr:               credentials.flickr,
       tags:                 "",
-      lyricType:            "all",
+      lyricType:            "lyricryptic",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
@@ -165,7 +165,7 @@ var credentials = {
       handle:               "xyisx",
       format:               "<%= word1 %> <%= word2 %> is <%= word1 %>",
       twitter:              credentials.twitter_xyisx,
-      wordnik:              credentials.wordnik_boodoo,
+      wordnik:              credentials.wordnik,
       words:
       {
                     word1:
@@ -200,10 +200,6 @@ var credentials = {
       twitter:              credentials.twitter_latour,
       prioritySource:       1,
       preSource:            1,
-      criteria:             [], //unused at present
-      pivot:                '', //also unused
-      prioritySource:       1,
-      preSource:            1,
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 60000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
@@ -228,7 +224,7 @@ var credentials = {
       handle:               "likeilike",
       format:               "I like my <%= person %> like I like my <%= object %>: <%= desc0 %>, <%= desc1 %>, <%= junc %> <%= desc2 %>.",
       twitter:              credentials.twitter_likeilike,
-      wordnik:              credentials.wordnik_boodoo,
+      wordnik:              credentials.wordnik,
       words:
       {
                     object:
