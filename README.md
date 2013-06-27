@@ -33,6 +33,8 @@ Current existing bot 'types' are:
    Search twitter using two separate criteria, combine one tweet from each around a "pivot" word, tweet the result.
  - `latourandorder` ([@LatourAndOrder](http://twitter.com/latourandorder), variant of `tweetmash`) **SPECIALIZED**
    Take a sentence from a TV series' IMDB episode summaries, pair it with a short tweet, tweet the result.
+ - `syllablecount` ([@ct_races](http://twitter.com/ct_races))
+   Find a tweet with the specified number of syllables, tweet its content with optional prefix/suffix content around it.
  - `reminder` (based on [@AvoidComments](http://twitter.com/AvoidComments))
    Given a pool of messages, periodically tweet them (in sequence or at random).
  - `youtube` (based on [@MLGPR0GAMERxx](http://twitter.com/mlgpr0gamerxx))
