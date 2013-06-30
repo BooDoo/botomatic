@@ -42,7 +42,7 @@ Current existing bot 'types' are:
  - `reminder` (based on [@AvoidComments](http://twitter.com/AvoidComments))  
     Given a pool of messages, periodically tweet them (in sequence or at random).  
 
- - `youtube` (based on [@MLGPR0GAMERxx](http://twitter.com/mlgpr0gamerxx))  
+ - `youtube` (based on [@420PR0GAMERXx](http://twitter.com/mlgpr0gamerxx))  
     Search YouTube videos for a phrase, tweet the video's title with a link to the video.  
 
  - `snowclone` ([@xyisx_bot](http://twitter.com/xyisx_bot), based on [@metaphorminute](http://twitter.com/metaphorminute), like a madlib)  
