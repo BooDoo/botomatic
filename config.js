@@ -151,6 +151,7 @@ var credentials = {
       format:               "<%= prefix %><%= target %><%= suffix>",
       twitter:              credentials.twitter_ct_races,
       targetSyllables:      7,
+      isDestructive:        true,
       //prefix:             '',
       suffix:               ' / doo-dah, doo-dah…',
       //queueMax:           300,
