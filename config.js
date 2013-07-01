@@ -214,8 +214,8 @@ var credentials = {
       twitter:              credentials.twitter_porpenteen,
       criteria:             ["#swag and", "from:aliendovecote and"],
       pivot:                " and ",
-      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*30 : 60000,
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000,
+      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60 : 60000,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*75 : 60000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 
