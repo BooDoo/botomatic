@@ -90,6 +90,15 @@ var credentials = {
       access_token_secret:  process.env['LIKE_TWITTER_ACCESS_TOKEN_SECRET']
     },
 
+    twitter_w8ed4game:
+    {
+      service:              "twitter",
+      consumer_key:         process.env['W8ED_TWITTER_CONSUMER_KEY'],
+      consumer_secret:      process.env['W8ED_TWITTER_CONSUMER_SECRET'],
+      access_token:         process.env['W8ED_TWITTER_ACCESS_TOKEN'],
+      access_token_secret:  process.env['W8ED_TWITTER_ACCESS_TOKEN_SECRET']
+    },
+
     flickr:
     {
       service:              "flickr",
@@ -130,6 +139,7 @@ var credentials = {
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
+
 /*
     lyrpic:
     {
@@ -242,6 +252,21 @@ var credentials = {
       juncs:                ["and", "but", "not"],
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*30 : 60000/2,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*45 : 60000*3,
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
+    },
+    
+    w8ed4game:
+    {
+      type:                 "combinator",
+      handle:               "w8ed4game",
+      format:               "This is the <%= description %> the <%= platform %> <%= ending %>",
+      twitter:              credentials.twitter_w8ed4game,
+      endings:              ["has been waiting for!"],
+      descriptors:          require('./data/gameArrays').descriptors,
+      gameTypes:            require('./data/gameArrays').gameTypes,
+      platforms:            require('./data/gameArrays').platforms,
+      composeInterval:      process.env['NODE_ENV'] === 'production' ? 60000*30 : 60000/2,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*90 : 15000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     }
   };
