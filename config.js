@@ -112,7 +112,7 @@ var credentials = {
       format:               "<%= lyricSegment %> <%= photoURL %>",
       twitter:              credentials.twitter_gcatpix,
       flickr:               credentials.flickr,
-      tags:                 "cat%2C+-caterpillar",
+      tags:                 "cat,-caterpillar,-dead,-death,-dying",
       lyricType:            "rap",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 30000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
@@ -240,7 +240,8 @@ var credentials = {
                           }
       },
       persons:              ["men", "women", "ladies", "fellahs", "partners", "hook-ups", "pairings", "lovers", "husbands", "wives", "spouses", "senpai"],
-      juncs:                ["and", "but", "not"],
+      juncs:                ["and", "but", "not", "totally", "never", "always", "kind 
+of", "very", "barely", "but not", "and not"],
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*30 : 60000/2,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60*3 : 60000*3,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
@@ -253,9 +254,9 @@ var credentials = {
       format:               "This is the <%= description %> <%= platform %> <%= ending %>",
       twitter:              credentials.twitter_w8ed4game,
       endings:              ["has been waiting for!"],
-      descriptors:          require('./data/gameArrays').descriptors,
-      gameTypes:            require('./data/gameArrays').gameTypes,
-      platforms:            require('./data/gameArrays').platforms,
+      descriptors:          require(__dirname + '/data/gameArrays').descriptors,
+      gameTypes:            require(__dirname + '/data/gameArrays').gameTypes,
+      platforms:            require(__dirname + '/data/gameArrays').platforms,
       composeInterval:      process.env['NODE_ENV'] === 'production' ? 60000*60/2 : 60000/2,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60*4 : 15000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
@@ -265,3 +266,4 @@ var credentials = {
 module.exports.dashboard = dashboard;
 module.exports.credentials = credentials;
 module.exports.bots = bots;
+

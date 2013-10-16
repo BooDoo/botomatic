@@ -6,10 +6,10 @@
  * @LatourAndOrder, @GCatPix, @CWDogPix, @ct_races and @xyisx_bot
  */
 
-var CONFIG      = require('./config.js'),
+var CONFIG      = require(__dirname + '/config.js'),
     express     = require('express'),
     app         = express(),
-    status      = require('./www/routes/status'),
+    status      = require(__dirname + '/www/routes/status'),
     http        = require('http'),
     path        = require('path'),
     fs          = require('fs'),
@@ -17,8 +17,8 @@ var CONFIG      = require('./config.js'),
     util        = require('util'),
     format      = util.format,
     bytes       = require('bytes'),
-    Bot         = require('./lib/Bot.js'),
-    Server      = require('./lib/Server.js'),
+    Bot         = require(__dirname + '/lib/Bot.js'),
+    Server      = require(__dirname + '/lib/Server.js'),
     passport    = require('passport'),
     DigestStrat = require('passport-http').DigestStrategy,
     dashSettings= CONFIG.dashboard,
@@ -27,7 +27,8 @@ var CONFIG      = require('./config.js'),
     freeView    = !dashSettings.protectView   ? allowAll : null,
     freeEdit    = !dashSettings.protectUpdate ? allowAll : null,
     freeStore   = !dashSettings.protectStore  ? allowAll : null,
-    botStates   = fs.existsSync('./bots.json') ? JSON.parse(fs.readFileSync('./bots.json', 'utf8')) : false;
+    botStates   = fs.existsSync(__dirname + '/bots.json') ?
+                  JSON.parse(fs.readFileSync(__dirname + '/bots.json', 'utf8')) : false;
 
 function logFormat(tokens, req, res){
     var status = res.statusCode
@@ -54,7 +55,7 @@ function logFormat(tokens, req, res){
 }
 
 // all environments
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 3030);
 app.set('views', path.join (__dirname, 'www' , 'views'));
 app.set('view engine', 'jade');
 app.use(express.favicon()); //TODO: Make a favicon!
@@ -62,7 +63,6 @@ app.use(express.logger({"format": logFormat})); //TODO: Toggle logging?
 app.use(express.bodyParser());
 app.use(express.methodOverride());
 app.use(express.cookieParser('what color is the sky?')); //Do I need this?
-app.use(express.session());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(app.router);
@@ -192,6 +192,9 @@ app.get('/status/:handle/:key/',
 
 http.createServer(app).listen(app.get('port'), function(){
   util.log('Express server listening on port ' + app.get('port'));
+})
+.on('error', function(err) {
+  util.log('Express server can\'t listen [' + err.code + ']. Will still export app.');
 });
 
 //Immediate function to construct bots and make setInterval calls:
@@ -208,3 +211,5 @@ http.createServer(app).listen(app.get('port'), function(){
   }
 
 })(CONFIG.bots);
+
+exports.app = app;

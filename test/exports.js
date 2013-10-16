@@ -1,9 +1,9 @@
-var Bot           = require('../lib/Bot.js'),
-    PromiseConfig = require('../lib/PromiseConfig.js'),
-    Promises      = require('../lib/Promises.js'),
-    utils         = require('../lib/utils.js'),
-    Word          = require('../lib/Word.js'),
-    config        = require('../config.js'),
+var Bot           = require(__dirname + '/../lib/Bot.js'),
+    PromiseConfig = require(__dirname + '/../lib/PromiseConfig.js'),
+    Promises      = require(__dirname + '/../lib/Promises.js'),
+    utils         = require(__dirname + '/../lib/utils.js'),
+    Word          = require(__dirname + '/../lib/Word.js'),
+    config        = require(__dirname + '/../config.js'),
     modules       = {"Bot": Bot, "PromiseConfig": PromiseConfig, "Promises": Promises, "utils": utils, "Word": Word, "config": config},
     _             = require('lodash');
 
