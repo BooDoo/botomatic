@@ -7,6 +7,7 @@
 */
 
 var CONFIG      = require('./config.js'),
+    fs          = require('fs')
     express     = require('express'),
     app         = express(),
     status      = require('./www/routes/status'),
@@ -34,7 +35,6 @@ app.use(express.logger('dev')); //TODO: Toggle logging?
 app.use(express.bodyParser());
 app.use(express.methodOverride());
 app.use(express.cookieParser('your secret here')); //Do I need this?
-app.use(express.session());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(app.router);
@@ -167,6 +167,7 @@ app.get('/store/bots.json',
       stagger = 0;
 
   for (botHandle in botConfigs) {
+    console.log("Starting", botHandle)
     setTimeout(function(botConfig, botState) {
       new Bot(botConfig, botState);
     }, stagger, botConfigs[botHandle], botStates[botHandle]);

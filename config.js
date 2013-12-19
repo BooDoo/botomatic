@@ -18,7 +18,7 @@ var dashboard = {
 }
 
 var credentials = {
-    twitter_gcatpix :
+    twitter_gcatpix:
     {
       service:              "twitter",
       consumer_key:         process.env['CAT_TWITTER_CONSUMER_KEY'],
@@ -70,15 +70,6 @@ var credentials = {
       consumer_secret:      process.env['LATOUR_TWITTER_CONSUMER_SECRET'],
       access_token:         process.env['LATOUR_TWITTER_ACCESS_TOKEN'],
       access_token_secret:  process.env['LATOUR_TWITTER_ACCESS_TOKEN_SECRET']
-    },
-
-    twitter_porpenteen:
-    {
-      service:              "twitter",
-      consumer_key:         process.env['PORP_TWITTER_CONSUMER_KEY'],
-      consumer_secret:      process.env['PORP_TWITTER_CONSUMER_SECRET'],
-      access_token:         process.env['PORP_TWITTER_ACCESS_TOKEN'],
-      access_token_secret:  process.env['PORP_TWITTER_ACCESS_TOKEN_SECRET']
     },
 
     twitter_likeilike:
