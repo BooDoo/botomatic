@@ -35,7 +35,6 @@ app.use(express.logger('dev')); //TODO: Toggle logging?
 app.use(express.bodyParser());
 app.use(express.methodOverride());
 app.use(express.cookieParser('what color is the sky?')); //Do I need this?
-app.use(express.session());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(app.router);
@@ -173,6 +172,7 @@ http.createServer(app).listen(app.get('port'), function(){
       stagger = 0;
 
   for (botHandle in botConfigs) {
+    console.log("Starting",botHandle)
     setTimeout(function(botConfig, botState) {
       new Bot(botConfig, botState);
     }, stagger, botConfigs[botHandle], botStates[botHandle]);
