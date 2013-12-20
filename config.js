@@ -72,15 +72,6 @@ var credentials = {
       access_token_secret:  process.env['LATOUR_TWITTER_ACCESS_TOKEN_SECRET']
     },
 
-    twitter_porpenteen:
-    {
-      service:              "twitter",
-      consumer_key:         process.env['PORP_TWITTER_CONSUMER_KEY'],
-      consumer_secret:      process.env['PORP_TWITTER_CONSUMER_SECRET'],
-      access_token:         process.env['PORP_TWITTER_ACCESS_TOKEN'],
-      access_token_secret:  process.env['PORP_TWITTER_ACCESS_TOKEN_SECRET']
-    },
-
     twitter_likeilike:
     {
       service:              "twitter",
@@ -140,7 +131,7 @@ var credentials = {
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 
-/*
+
     lyrpic:
     {
       type:                 "lyrpictweet",
@@ -153,7 +144,7 @@ var credentials = {
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
-*/
+
     camptownraces:
     {
       type:                 "syllablecount",
@@ -164,7 +155,7 @@ var credentials = {
       isDestructive:        true,
       //prefix:             '',
       suffix:               ' / doo-dah, doo-dah…',
-      //queueMax:             300,
+      //queueMax:           300,
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*10 : 30000,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
@@ -216,13 +207,13 @@ var credentials = {
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 
-    porpenteen:
+    latourswag:
     {
       type:                 "tweetmash",
-      handle:               "porpenteen",
+      handle:               "latourswag",
       format:               "<%= pre %><%= pivot %><%= post %>",
-      twitter:              credentials.twitter_porpenteen,
-      criteria:             ["#swag and", "from:aliendovecote and"],
+      twitter:              credentials.twitter_latour,
+      criteria:             ["#swag and", "from:latourbot and"],
       pivot:                " and ",
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*4 : 60000,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60*1.5 : 60000,
