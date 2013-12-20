@@ -4,18 +4,18 @@ Bot-o-matic (for the People)
 [node](http://nodejs.org) application to maintain menagerie of twitter bots.  
 Includes basic status/management dashboard at `(host)/status/`
 
-Currently used for Twitter bots:  
-[@GCatPix](http://twitter.com/gcatpix)  
-[@CWDogPix](http://twitter.com/cwdogpix)  
-[@ct_Races](http://twitter.com/ct_races)  
-[@xyisx_bot](http://twitter.com/xyisx_bot)  
-[@LatourAndOrder](http://twitter.com/latourandorder)  
-[@porpenteen](http://twitter.com/porpenteen)  
-[@iLikeLikeiLike](http://twitter.com/ilikelikeilike)  
+Currently used for Twitter bots:
+[@GCatPix](http://twitter.com/gcatpix)
+[@CWDogPix](http://twitter.com/cwdogpix)
+[@ct_Races](http://twitter.com/ct_races)
+[@xyisx_bot](http://twitter.com/xyisx_bot)
+[@LatourAndOrder](http://twitter.com/latourandorder)
+[@porpenteen](http://twitter.com/porpenteen)
+[@iLikeLikeiLike](http://twitter.com/ilikelikeilike)
 
 INSTALLATION
 =================
-> git clone https://github.com/BooDoo/botomatic.git  
+> git clone https://github.com/BooDoo/botomatic.git
 > npm install
 
 SETUP
@@ -42,7 +42,7 @@ Current existing bot 'types' are:
  - `reminder` (based on [@AvoidComments](http://twitter.com/AvoidComments))  
     Given a pool of messages, periodically tweet them (in sequence or at random).  
 
- - `youtube` (based on [@420PR0GAMERXx](http://twitter.com/mlgpr0gamerxx))  
+ - `youtube` (based on [@MLGPR0GAMERxx](http://twitter.com/mlgpr0gamerxx))  
     Search YouTube videos for a phrase, tweet the video's title with a link to the video.  
 
  - `snowclone` ([@xyisx_bot](http://twitter.com/xyisx_bot), based on [@metaphorminute](http://twitter.com/metaphorminute), like a madlib)  

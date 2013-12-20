@@ -18,7 +18,7 @@ var dashboard = {
 }
 
 var credentials = {
-    twitter_gcatpix :
+    twitter_gcatpix:
     {
       service:              "twitter",
       consumer_key:         process.env['CAT_TWITTER_CONSUMER_KEY'],
@@ -72,15 +72,6 @@ var credentials = {
       access_token_secret:  process.env['LATOUR_TWITTER_ACCESS_TOKEN_SECRET']
     },
 
-    twitter_porpenteen:
-    {
-      service:              "twitter",
-      consumer_key:         process.env['PORP_TWITTER_CONSUMER_KEY'],
-      consumer_secret:      process.env['PORP_TWITTER_CONSUMER_SECRET'],
-      access_token:         process.env['PORP_TWITTER_ACCESS_TOKEN'],
-      access_token_secret:  process.env['PORP_TWITTER_ACCESS_TOKEN_SECRET']
-    },
-
     twitter_likeilike:
     {
       service:              "twitter",
@@ -88,6 +79,15 @@ var credentials = {
       consumer_secret:      process.env['LIKE_TWITTER_CONSUMER_SECRET'],
       access_token:         process.env['LIKE_TWITTER_ACCESS_TOKEN'],
       access_token_secret:  process.env['LIKE_TWITTER_ACCESS_TOKEN_SECRET']
+    },
+
+    twitter_w8ed4game:
+    {
+      service:              "twitter",
+      consumer_key:         process.env['W8ED_TWITTER_CONSUMER_KEY'],
+      consumer_secret:      process.env['W8ED_TWITTER_CONSUMER_SECRET'],
+      access_token:         process.env['W8ED_TWITTER_ACCESS_TOKEN'],
+      access_token_secret:  process.env['W8ED_TWITTER_ACCESS_TOKEN_SECRET']
     },
 
     flickr:
@@ -114,7 +114,7 @@ var credentials = {
       flickr:               credentials.flickr,
       tags:                 "cat%2C+-caterpillar",
       lyricType:            "rap",
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 30000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 
@@ -127,7 +127,7 @@ var credentials = {
       flickr:               credentials.flickr,
       tags:                 "dog",
       lyricType:            "country",
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 30000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 
@@ -151,6 +151,7 @@ var credentials = {
       format:               "<%= prefix %><%= target %><%= suffix>",
       twitter:              credentials.twitter_ct_races,
       targetSyllables:      7,
+      isDestructive:        true,
       //prefix:             '',
       suffix:               ' / doo-dah, doo-dah…',
       //queueMax:           300,
@@ -192,11 +193,37 @@ var credentials = {
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 
-    howilikeit:
+    latourandorder:
+    {
+      type:                 "latourandorder",
+      handle:               "latourandorder",
+      format:               "<%= pre %> <%= post %>",
+      twitter:              credentials.twitter_latour,
+      prioritySource:       1,
+      preSource:            1,
+      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*4 : 60000*4,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60*4 : 60000*4,
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
+    },
+
+    latourswag:
+    {
+      type:                 "tweetmash",
+      handle:               "latourswag",
+      format:               "<%= pre %><%= pivot %><%= post %>",
+      twitter:              credentials.twitter_latour,
+      criteria:             ["#swag and", "from:latourbot and"],
+      pivot:                " and ",
+      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*4 : 60000,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60*1.5 : 60000,
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
+    },
+
+    likeilike:
     {
       type:                 "howilikeit",
-      handle:               "howilikeit",
-      format:               "I like my <%= person %> like I like my <%= object %>: <%= desc0 %>, <%= desc1 %>, <%= junc %> <%= desc2 %>",
+      handle:               "likeilike",
+      format:               "I like my <%= person %> like I like my <%= object %>: <%= desc0 %>, <%= desc1 %>, <%= junc %> <%= desc2 %>.",
       twitter:              credentials.twitter_likeilike,
       wordnik:              credentials.wordnik,
       words:
@@ -211,40 +238,30 @@ var credentials = {
                             minCorpusCount: 5000
                           }
       },
-      persons:              ["men", "women", "ladies", "fellahs", "partners", "hook-ups", "pairings", "lovers", "husbands", "wives", "spouses"],
+      persons:              ["men", "women", "ladies", "fellahs", "partners", "hook-ups", "pairings", "lovers", "husbands", "wives", "spouses", "senpai"],
       juncs:                ["and", "but", "not"],
-      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000/2,
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*45   : 60000*3,
+      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*30 : 60000/2,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60*3 : 60000*3,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
-
-    latourandorder:
+    
+    w8ed4game:
     {
-      type:                 "latourandorder",
-      handle:               "latourandorder",
-      format:               "<%= pre %> <%= post %>",
-      twitter:              credentials.twitter_latour,
-      prioritySource:       1,
-      preSource:            1,
-      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 60000,
+      type:                 "combinator",
+      handle:               "w8ed4game",
+      format:               "This is the <%= description %> <%= platform %> <%= ending %>",
+      twitter:              credentials.twitter_w8ed4game,
+      endings:              ["has been waiting for!"],
+      descriptors:          require('./data/gameArrays').descriptors,
+      gameTypes:            require('./data/gameArrays').gameTypes,
+      platforms:            require('./data/gameArrays').platforms,
+      composeInterval:      process.env['NODE_ENV'] === 'production' ? 60000*60/2 : 60000/2,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60*4 : 15000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 
-    latourswag:
+    commentsreminder:
     {
-      type:                 "tweetmash",
-      handle:               "latourswag",
-      format:               "<%= pre %><%= pivot %><%= post %>",
-      twitter:              credentials.twitter_latour,
-      criteria:             ["#swag and", "from:latourbot"],
-      pivot:                " and ",
-      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*30 : 60000,
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000,
-      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
-    },
-
-    commentsreminder: {
       type:                 "reminder",
       handle:               "commentsreminder",
       format:               "<%= content %>",
