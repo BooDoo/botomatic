@@ -10,7 +10,6 @@ Currently used for Twitter bots:
 [@ct_Races](http://twitter.com/ct_races)  
 [@xyisx_bot](http://twitter.com/xyisx_bot)  
 [@LatourAndOrder](http://twitter.com/latourandorder)  
-[@porpenteen](http://twitter.com/porpenteen)  
 [@iLikeLikeiLike](http://twitter.com/ilikelikeilike)  
 
 INSTALLATION
@@ -29,8 +28,7 @@ See `config.js` for sample credential/bot configurations.
 Current existing bot 'types' are:
  - `lyrpictweet` ([@GCatPix](http://twitter.com/gcatpix), [@CWDogPix](http://twitter.com/cwdogpix))  
     Fetch random lyrics (rap, country, or @lyricryptic) and a random photo (filtered by tag(s)), then tweet the result.  
-
- - `tweetmash` ([@porpenteen](http://twitter.com/porpenteen), based on [@LatourSwag](http://twitter.com/latourswag))  
+ - `tweetmash` (based on [@LatourSwag](http://twitter.com/latourswag))  
     Search twitter using two separate criteria, combine one tweet from each around a "pivot" word, tweet the result.  
 
  - `latourandorder` ([@LatourAndOrder](http://twitter.com/latourandorder), variant of `tweetmash`) **SPECIALIZED**  
