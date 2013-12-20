@@ -81,6 +81,15 @@ var credentials = {
       access_token_secret:  process.env['LIKE_TWITTER_ACCESS_TOKEN_SECRET']
     },
 
+    twitter_w8ed4game:
+    {
+      service:              "twitter",
+      consumer_key:         process.env['W8ED_TWITTER_CONSUMER_KEY'],
+      consumer_secret:      process.env['W8ED_TWITTER_CONSUMER_SECRET'],
+      access_token:         process.env['W8ED_TWITTER_ACCESS_TOKEN'],
+      access_token_secret:  process.env['W8ED_TWITTER_ACCESS_TOKEN_SECRET']
+    },
+
     flickr:
     {
       service:              "flickr",
@@ -105,7 +114,7 @@ var credentials = {
       flickr:               credentials.flickr,
       tags:                 "cat%2C+-caterpillar",
       lyricType:            "rap",
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 30000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 
@@ -118,7 +127,7 @@ var credentials = {
       flickr:               credentials.flickr,
       tags:                 "dog",
       lyricType:            "country",
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 30000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 
@@ -130,7 +139,7 @@ var credentials = {
       twitter:              credentials.twitter_lyrpic,
       flickr:               credentials.flickr,
       tags:                 "",
-      lyricType:            "all",
+      lyricType:            "lyricryptic",
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 30000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
@@ -192,8 +201,8 @@ var credentials = {
       twitter:              credentials.twitter_latour,
       prioritySource:       1,
       preSource:            1,
-      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*2 : 60000*4,
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60 : 60000,
+      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*4 : 60000*4,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60*4 : 60000*4,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 
@@ -203,14 +212,56 @@ var credentials = {
       handle:               "latourswag",
       format:               "<%= pre %><%= pivot %><%= post %>",
       twitter:              credentials.twitter_latour,
-      criteria:             ["#swag and", "from:latourbot"],
+      criteria:             ["#swag and", "from:latourbot and"],
       pivot:                " and ",
-      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*30 : 60000,
-      interval:             process.env['NODE_ENV'] === 'production' ? 60000*15 : 60000,
+      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*60*4 : 60000,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60*1.5 : 60000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
 
-    commentsreminder: {
+    likeilike:
+    {
+      type:                 "howilikeit",
+      handle:               "likeilike",
+      format:               "I like my <%= person %> like I like my <%= object %>: <%= desc0 %>, <%= desc1 %>, <%= junc %> <%= desc2 %>.",
+      twitter:              credentials.twitter_likeilike,
+      wordnik:              credentials.wordnik,
+      words:
+      {
+                    object:
+                          {
+                            includePartOfSpeech: "noun",
+                            excludePartOfSpeech: "pronoun,noun-posessive,proper-noun-posessive,suffix,idiom,affix",
+                            hasDictionaryDef: false,
+                            limit: 10,
+                            minDictionaryCount: 10,
+                            minCorpusCount: 5000
+                          }
+      },
+      persons:              ["men", "women", "ladies", "fellahs", "partners", "hook-ups", "pairings", "lovers", "husbands", "wives", "spouses", "senpai"],
+      juncs:                ["and", "but", "not"],
+      searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*30 : 60000/2,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60*3 : 60000*3,
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
+    },
+    
+    w8ed4game:
+    {
+      type:                 "combinator",
+      handle:               "w8ed4game",
+      format:               "This is the <%= description %> <%= platform %> <%= ending %>",
+      twitter:              credentials.twitter_w8ed4game,
+      endings:              ["has been waiting for!"],
+      descriptors:          require('./data/gameArrays').descriptors,
+      gameTypes:            require('./data/gameArrays').gameTypes,
+      platforms:            require('./data/gameArrays').platforms,
+      composeInterval:      process.env['NODE_ENV'] === 'production' ? 60000*60/2 : 60000/2,
+      interval:             process.env['NODE_ENV'] === 'production' ? 60000*60*4 : 15000,
+      hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
+    },
+
+    commentsreminder:
+    {
       type:                 "reminder",
       handle:               "commentsreminder",
       format:               "<%= content %>",

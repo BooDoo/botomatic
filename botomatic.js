@@ -34,7 +34,7 @@ app.use(express.favicon()); //TODO: Make a favicon
 app.use(express.logger('dev')); //TODO: Toggle logging?
 app.use(express.bodyParser());
 app.use(express.methodOverride());
-app.use(express.cookieParser('your secret here')); //Do I need this?
+app.use(express.cookieParser('what color is the sky?')); //Do I need this?
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(app.router);
