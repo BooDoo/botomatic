@@ -22,7 +22,7 @@
     }
   ],
   "dependencies": {
-    "express": "3.0.x",
+    "express": ">=3.0.0",
     "twit": "1.1.x",
     "cmudict": "1.0.x",
     "lodash": "1.x.x",
@@ -30,7 +30,8 @@
     "request": "2.14.x",
     "jade": "0.31.x",
     "passport": "0.1.x",
-    "passport-http": "0.2.x"
+    "passport-http": "0.2.x",
+    "bytes": "~0.3.0"
   },
   "engines": {
     "node": "0.x.x",

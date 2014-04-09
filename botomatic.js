@@ -14,6 +14,9 @@ var CONFIG      = require('./config.js'),
     path        = require('path'),
     fs          = require('fs'),
     _           = require('lodash'),
+    util        = require('util'),
+    format      = util.format,
+    bytes       = require('bytes'),
     Bot         = require('./lib/Bot.js'),
     Server      = require('./lib/Server.js'),
     passport    = require('passport'),
@@ -26,12 +29,36 @@ var CONFIG      = require('./config.js'),
     freeStore   = !dashSettings.protectStore  ? allowAll : null,
     botStates   = fs.existsSync('./bots.json') ? JSON.parse(fs.readFileSync('./bots.json', 'utf8')) : false;
 
+function logFormat(tokens, req, res){
+    var status = res.statusCode
+      , len = parseInt(res.getHeader('Content-Length'), 10)
+      , color = 32
+      , datetime
+      , output = '';
+
+    if (status >= 500) color = 31
+    else if (status >= 400) color = 33
+    else if (status >= 300) color = 36;
+
+    len = isNaN(len)
+      ? ''
+      : len = ' - ' + bytes(len);
+
+    reqTime = req._startTime.toString().split(' ').slice(1,5).join(' ');
+    resTime = (new Date - req._startTime);
+
+    output = format('\x1b[90m%s %s @ %s%s \x1b[%sm%s\x1b[90m %sms %s\x1b[0m',
+      reqTime, req.method, req.get('host'), (req.originalUrl || req.url),
+      color, res.statusCode, resTime, len);
+    return output;
+}
+
 // all environments
 app.set('port', process.env.PORT || 3000);
 app.set('views', path.join (__dirname, 'www' , 'views'));
 app.set('view engine', 'jade');
 app.use(express.favicon()); //TODO: Make a favicon!
-app.use(express.logger('dev')); //TODO: Toggle logging?
+app.use(express.logger({"format": logFormat})); //TODO: Toggle logging?
 app.use(express.bodyParser());
 app.use(express.methodOverride());
 app.use(express.cookieParser('what color is the sky?')); //Do I need this?
