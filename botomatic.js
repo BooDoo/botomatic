@@ -86,7 +86,7 @@ passport.use("digest",
   new DigestStrat({ qop: 'auth' },
   function(username, done) {
     user = authUsers[username];
-      console.log("Authenticating as:",username);
+      util.debug("Authenticating as: " + username);
       if (!user) { return done(null, false); }
       return done(null, user, user.password);
   }
@@ -191,7 +191,7 @@ app.get('/status/:handle/:key/',
 );
 
 http.createServer(app).listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
+  util.log('Express server listening on port ' + app.get('port'));
 });
 
 //Immediate function to construct bots and make setInterval calls:
