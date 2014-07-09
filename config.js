@@ -193,7 +193,7 @@ var credentials = {
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*15   : 30000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
-
+/*
     latourandorder:
     {
       type:                 "latourandorder",
@@ -219,7 +219,7 @@ var credentials = {
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60*1.5 : 60000,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
-
+*/
     likeilike:
     {
       type:                 "howilikeit",
@@ -240,13 +240,12 @@ var credentials = {
                           }
       },
       persons:              ["men", "women", "ladies", "fellahs", "partners", "hook-ups", "pairings", "lovers", "husbands", "wives", "spouses", "senpai"],
-      juncs:                ["and", "but", "not", "totally", "never", "always", "kind 
-of", "very", "barely", "but not", "and not"],
+      juncs:                ["and", "but", "not", "totally", "never", "always", "kind of", "very", "barely", "but not", "and not"],
       searchInterval:       process.env['NODE_ENV'] === 'production' ? 60000*30 : 60000/2,
       interval:             process.env['NODE_ENV'] === 'production' ? 60000*60*3 : 60000*3,
       hideDash:             ["twitter", "T", "flickr", "wordnik", "hideDash", "intervalId", "searchIntervalId"]
     },
-    
+
     w8ed4game:
     {
       type:                 "combinator",

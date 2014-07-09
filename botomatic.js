@@ -203,6 +203,7 @@ http.createServer(app).listen(app.get('port'), function(){
       stagger = 0;
 
   for (botHandle in botConfigs) {
+    console.log("Loading up",botHandle);
     setTimeout(function(botConfig, botState) {
       new Bot(botConfig, botState);
     }, stagger, botConfigs[botHandle], botStates[botHandle]);
